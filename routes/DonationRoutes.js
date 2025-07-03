@@ -30,7 +30,7 @@ router.post("/doacoes", async (req, res) => {
   }
 });
 
-router.get("/doacoes/:txId", async (req, res) => {
+router.get("/doacoes/id/:txId", async (req, res) => {
   try {
     const { txId } = req.params;
     const donation = await donationService.getDonationByTxId(txId);
@@ -41,8 +41,24 @@ router.get("/doacoes/:txId", async (req, res) => {
       res.status(404).json({ message: "Doação não encontrada." });
     }
   } catch (error) {
-    console.error("Erro na rota GET /api/doacoes/:txId:", error);
-    res.status(500).json({ error: "Erro interno ao buscar a doação." });
+    console.error("Erro de rota:", error);
+    res.status(500).json({ error: "Erro interno." });
+  }
+});
+
+router.get("/doacoes/nome-do-doador/:donorName", async (req, res) => {
+  try {
+    const { donorName } = req.params;
+    const donations = await donationService.getDonationByDonorName(donorName);
+
+    if (donations.length > 0) {
+      res.status(200).json(donations);
+    } else {
+      res.status(404).json({ message: "Doador não encontrado." });
+    }
+  } catch (error) {
+    console.error("Erro de rota: ", error);
+    res.status(500).json({ error: "Erro interno." });
   }
 });
 

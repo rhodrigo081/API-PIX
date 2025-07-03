@@ -4,17 +4,23 @@ const DonationModel = require("../models/Donation");
 
 class DonationService {
   async createDonation(data) {
-    const {donorCPF, donorName, donorEmail, amount } = data;
+    const { donorCPF, donorName, donorEmail, amount } = data;
 
-    if (!donorCPF || !donorName || !donorEmail || !amount || parseFloat(amount) <= 0) {
+    if (
+      !donorCPF ||
+      !donorName ||
+      !donorEmail ||
+      !amount ||
+      parseFloat(amount) <= 0
+    ) {
       throw new Error(
         "Todos os campos são obrigatórios! E o valor da doação tem que ser maior que 0."
       );
     }
 
-    const cleanedCPF = donorCPF.replace(/\D/g, '');
-    if(cleanedCPF.length !== 11){
-        throw new Error('CPF Inválido!')
+    const cleanedCPF = donorCPF.replace(/\D/g, "");
+    if (cleanedCPF.length !== 11) {
+      throw new Error("CPF Inválido!");
     }
 
     try {
@@ -35,7 +41,9 @@ class DonationService {
       const locId = chargeResponse.loc ? chargeResponse.loc.id : null;
       const qrCodeImage = chargeResponse.location || null;
       const copyPastePix = chargeResponse.pixCopiaECola || null;
-      const createdAt = chargeResponse.calendario ? chargeResponse.calendario.criacao : null;
+      const createdAt = chargeResponse.calendario
+        ? chargeResponse.calendario.criacao
+        : null;
 
       if (!txId || !locId || !qrCodeImage || !copyPastePix || !createdAt) {
         console.error("Efí did not return all expected Pix data.", {
@@ -70,8 +78,7 @@ class DonationService {
     } catch (error) {
       if (error.response && error.response.data) {
         const apiError = error.response.data;
-        const errorName =
-          apiError.nome || apiError.name || "Erro desconhecido";
+        const errorName = apiError.nome || apiError.name || "Erro desconhecido";
         const errorDetail =
           apiError.mensagem || apiError.message || JSON.stringify(apiError);
         throw new Error(`Erro: ${errorName} - ${errorDetail}`);
@@ -82,6 +89,10 @@ class DonationService {
 
   async getDonationByTxId(txId) {
     return await DonationModel.findByTxId(txId);
+  }
+
+  async getDonationByDonorName(donorName) {
+    return await DonationModel.findByDonorName(donorName);
   }
 
   async updateDonationStatus(docId, newStatus) {
