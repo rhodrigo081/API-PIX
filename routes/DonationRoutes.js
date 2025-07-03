@@ -18,8 +18,6 @@ router.post("/doacoes", async (req, res) => {
       data: newDonation,
     });
   } catch (error) {
-    console.error("Erro na rota POST /api/doacoes:", error);
-
     const statusCode =
       error.message.includes("obrigatórios") ||
       error.message.includes("API Efí")

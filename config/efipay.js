@@ -1,4 +1,4 @@
-const Gerencianet = require('sdk-node-apis-efi');
+const Gerencianet = require('gn-api-sdk-node');
 require('dotenv').config();
 
 // Credenciais da conta bancária

@@ -33,15 +33,17 @@ class DonationService {
 
       const txId = chargeResponse.txid || null;
       const locId = chargeResponse.loc ? chargeResponse.loc.id : null;
-      const qrCodeImage = chargeResponse.imagemQrcode || null;
-      const copyPastePix = chargeResponse.qrcode || null;
+      const qrCodeImage = chargeResponse.location || null;
+      const copyPastePix = chargeResponse.pixCopiaECola || null;
+      const createdAt = chargeResponse.calendario ? chargeResponse.calendario.criacao : null;
 
-      if (!txId || !locId || !qrCodeImage || !copyPastePix) {
+      if (!txId || !locId || !qrCodeImage || !copyPastePix || !createdAt) {
         console.error("Efí did not return all expected Pix data.", {
           txId,
           locId,
           qrCodeImage,
           copyPastePix,
+          createdAt,
         });
         throw new Error(
           "Falha ao obter dados Pix essenciais da Efí. Resposta incompleta."
@@ -58,7 +60,7 @@ class DonationService {
         qrCode: qrCodeImage,
         copyPaste: copyPastePix,
         status: "CRIADA",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: createdAt,
       };
 
       const newDonation = new DonationModel(newDonationData);

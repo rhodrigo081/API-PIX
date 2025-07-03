@@ -16,7 +16,7 @@
     "dotenv": "^17.0.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
-    "sdk-node-apis-efi": "^1.2.24"
+    "gn-api-sdk-node": "^3.0.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

@@ -1,5 +1,6 @@
 const admin = require("../config/db");
 const db = admin.firestore();
+require('dotenv').config();
 
 class Donation {
     constructor({ id, donorCPF, donorName, donorEmail, amount, txId, locId, qrCode, copyPaste, status = "CRIADA", createdAt }) {
@@ -31,7 +32,6 @@ class Donation {
 
         let docRef;
         if (this.id) {
-
             docRef = db.collection('donations').doc(this.id);
             await docRef.set(dataToSave, { merge: true });
         } else {
