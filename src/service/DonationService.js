@@ -40,7 +40,7 @@ class DonationService {
         locId: pixChargeDetails.locId,
         qrCode: pixChargeDetails.qrCode,
         copyPaste: pixChargeDetails.copyPaste,
-        status: "PENDENTE",
+        status: "ATIVA",
         createdAt: pixChargeDetails.createdAt,
       };
     } catch (error) {

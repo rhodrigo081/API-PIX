@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const donationService = require("../service/DonationService");
 
 router.post('/webhook/pagamento', (req, res) => {
   const dados = req.body;

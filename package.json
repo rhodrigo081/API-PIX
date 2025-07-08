@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +13,6 @@
   "dependencies": {
     "brcypt": "^1.0.1",
     "cors": "^2.8.5",
-    "dotenv": "^17.0.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "gn-api-sdk-node": "^3.0.4"
