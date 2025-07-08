@@ -13,7 +13,7 @@ class Donation {
     locId,
     qrCode,
     copyPaste,
-    status = "CRIADA",
+    status,
     createdAt,
   }) {
     this.id = id;
@@ -50,32 +50,31 @@ class Donation {
       docRef = await db.collection("donations").add(dataToSave);
       this.id = docRef.id;
     }
-    console.log("Doação salva/atualizada com ID:", this.id);
     return { id: this.id, ...dataToSave };
   }
 
-  static async findByTxId(txId) {
-    const snapshot = await db
-      .collection("donations")
-      .where("txId", "==", txId)
-      .limit(1)
-      .get();
-    if (!snapshot.empty) {
-      const donation = snapshot.docs[0];
-      return new Donation({ id: donation.id, ...donation.data() });
-    }
-    return null;
-  }
+  static async findById(id) {
+    try {
+      const docRef = db.collection("donations").doc(id);
+      const donation = await docRef.get();
 
+      if (donation.exists) {
+        return new Donation({ id: donation.id, ...donation.data() });
+      }
+      return null;
+    } catch (error) {
+      throw error;
+    }
+  }
   static async findByDonorName(donorName) {
     try {
-      const snapshot = await db
+      const docRef = await db
         .collection("donations")
         .where("donorName", "==", donorName)
         .get();
 
-      if (!snapshot.empty) {
-        const donations = snapshot.docs.map(
+      if (!docRef.empty) {
+        const donations = docRef.docs.map(
           (doc) => new Donation({ id: doc.id, ...doc.data() })
         );
         return donations;
@@ -83,13 +82,8 @@ class Donation {
         return [];
       }
     } catch (error) {
-      console.error("Error fetching donations by donor name from DB:", error);
       throw error;
     }
-  }
-
-  static async updateStatus(docId, newStatus) {
-    await db.collection("donations").doc(docId).update({ status: newStatus });
   }
 }
 

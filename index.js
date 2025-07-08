@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 
-require("./config/db");
-require("./config/efipay");
+require("./src/config/db");
+require("./src/config/efipay");
 
-const donationRoutes = require("./routes/donationRoutes");
-const webhookRoutes = require("./routes/webhookRoutes");
+const donationRoutes = require("./src/routes/donationRoutes");
+const webhookRoutes = require("./src/routes/webhookRoutes");
 
 const app = express();
 
