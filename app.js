@@ -5,17 +5,34 @@ require("./src/config/db");
 require("./src/config/efipay");
 
 const donationRoutes = require("./src/routes/donationRoutes");
-const webhookRoutes = require("./src/routes/webhookRoutes");
+const webhook = require("./src/routes/Webhook");
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      if (req.originalUrl.startsWith("/api/webhook/pix")) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended: true,
+    verify: (req, res, buf) => {
+      if (req.originalUrl.startsWith("/api/webhook/pix")) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
 
 app.use("/api", donationRoutes);
-
-app.use("/api", webhookRoutes);
+app.use("/api", webhook);
 
 const PORT = process.env.PORT;
 

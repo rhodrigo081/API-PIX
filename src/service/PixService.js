@@ -1,5 +1,4 @@
 const efi = require("../config/efipay");
-require("dotenv").config();
 
 class PixService {
   constructor() {

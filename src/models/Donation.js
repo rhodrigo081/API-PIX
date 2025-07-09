@@ -1,6 +1,5 @@
 const admin = require("../config/db");
 const db = admin.firestore();
-require("dotenv").config();
 
 class Donation {
   constructor({

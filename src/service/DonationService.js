@@ -78,57 +78,105 @@ class DonationService {
    * @throws {Error}
    */
   async handlePixWebhook(pixPayload) {
+    console.log(
+      "handlePixWebhook - Payload completo recebido:",
+      JSON.stringify(pixPayload, null, 2)
+    );
     const txId = pixPayload.txid;
     const status =
       pixPayload.status || pixPayload.cobrancaStatus || pixPayload.situacao;
 
     if (!txId || !status) {
+      console.error(
+        "handlePixWebhook - txId ou status ausente no webhook:",
+        pixPayload
+      );
       throw new Error("txId ou status ausente no webhook");
     }
 
-    console.log("Webhook recebido:", { txId, status });
+    console.log("handlePixWebhook - Processando:", { txId, status });
 
     const donation = await this.getDonationByTxId(txId);
+
     const isPaymentConfirmed = status === "CONCLUIDA";
 
     if (isPaymentConfirmed) {
       if (donation) {
         if (donation.status !== "PAGA") {
           donation.status = "PAGA";
-          await donation.save();
-          console.log("Doação atualizada como paga:", donation.id);
+          try {
+            await donation.save();
+            console.log(
+              "handlePixWebhook - Doação atualizada como paga:",
+              donation.id
+            );
+          } catch (error) {
+            console.error(
+              "handlePixWebhook - Erro ao salvar doação existente:",
+              error
+            );
+            throw error;
+          }
         }
       } else {
-        const { valor, pagador: { cpf, nome, email } = {} } = pixPayload;
+        try {
+          const { valor, pagador } = pixPayload;
+          const cpf = pagador?.cpf;
+          const nome = pagador?.nome;
+          const email = pagador?.email;
 
-        if (!valor || !cpf || !nome || !email) {
-          throw new Error("Dados insuficientes para registrar nova doação");
+          if (!valor || !cpf || !nome || !email) {
+            console.error(
+              "handlePixWebhook - Dados insuficientes para registrar nova doação:",
+              pixPayload
+            );
+            throw new Error("Dados insuficientes para registrar nova doação");
+          }
+
+          const newDonation = new DonationModel({
+            donorCPF: cpf,
+            donorName: nome,
+            donorEmail: email,
+            amount: parseFloat(valor),
+            txId,
+            locId: pixPayload.loc?.id || null,
+            qrCode: pixPayload.qrCode || null,
+            copyPaste: pixPayload.brCode || null,
+            status: "PAGA",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+          await newDonation.save();
+          console.log("handlePixWebhook - Nova doação registrada:", txId);
+          return newDonation;
+        } catch (error) {
+          console.error(
+            "handlePixWebhook - Erro ao criar e salvar nova doação a partir do webhook:",
+            error
+          );
+          throw error;
         }
-
-        const newDonation = new DonationModel({
-          donorCPF: cpf,
-          donorName: nome,
-          donorEmail: email,
-          amount: parseFloat(valor),
-          txId,
-          locId: pixPayload.loc?.id || null,
-          qrCode: pixPayload.qrCode || null,
-          copyPaste: pixPayload.brCode || null,
-          status: "PAGA",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        await newDonation.save();
-        console.log("Nova doação registrada:", txId);
-        return newDonation;
       }
     } else if (donation) {
       if (donation.status !== status) {
         donation.status = status;
-        await donation.save();
-        console.log(`Status da doação ${txId} atualizado para: ${status}`);
+        try {
+          await donation.save();
+          console.log(
+            `handlePixWebhook - Status da doação ${txId} atualizado para: ${status}`
+          );
+        } catch (error) {
+          console.error(
+            "handlePixWebhook - Erro ao atualizar status da doação:",
+            error
+          );
+          throw error;
+        }
       }
     } else {
+      console.log(
+        `handlePixWebhook - Doação com txId ${txId} não encontrada e status ${status} não é CONCLUIDA para criar nova.`
+      );
       return null;
     }
 
