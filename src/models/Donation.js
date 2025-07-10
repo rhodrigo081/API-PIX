@@ -1,12 +1,16 @@
 const admin = require("../config/db");
 const db = admin.firestore();
+const {
+  NotFoundError,
+  ValidationError,
+  DatabaseError,
+} = require("../errors/Errors");
 
 class Donation {
   constructor({
     id,
     donorCPF,
     donorName,
-    donorEmail,
     amount,
     txId,
     locId,
@@ -18,20 +22,19 @@ class Donation {
     this.id = id;
     this.donorCPF = donorCPF;
     this.donorName = donorName;
-    this.donorEmail = donorEmail;
     this.amount = parseFloat(amount);
     this.txId = txId;
     this.locId = locId;
     this.qrCode = qrCode;
     this.copyPaste = copyPaste;
     this.status = status;
-    this.createdAt = createdAt || admin.firestore.FieldValue.serverTimestamp();
+    this.createdAt = createdAt || new Date().toISOString();
   }
 
   async save() {
     const dataToSave = {
+      donorCPF: this.donorCPF,
       donorName: this.donorName,
-      donorEmail: this.donorEmail,
       amount: this.amount,
       txId: this.txId,
       locId: this.locId,
@@ -42,7 +45,8 @@ class Donation {
     };
 
     let docRef;
-    if (this.id) {
+    try{
+      if (this.id) {
       docRef = db.collection("donations").doc(this.id);
       await docRef.set(dataToSave, { merge: true });
     } else {
@@ -50,6 +54,10 @@ class Donation {
       this.id = docRef.id;
     }
     return { id: this.id, ...dataToSave };
+    }catch(error){
+      throw new DatabaseError(`Erro ao salvar a doação: , ${error}`)
+    }
+    
   }
 
   static async findById(id) {
@@ -62,7 +70,7 @@ class Donation {
       }
       return null;
     } catch (error) {
-      throw error;
+      throw new DatabaseError(`Erro ao buscar doação: , ${error}`);
     }
   }
   static async findByDonorName(donorName) {
@@ -81,7 +89,7 @@ class Donation {
         return [];
       }
     } catch (error) {
-      throw error;
+      throw new DatabaseError(`Erro ao buscar doação: ${error}`);
     }
   }
 }

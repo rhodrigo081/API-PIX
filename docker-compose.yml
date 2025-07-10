@@ -11,12 +11,11 @@ services:
     environment:
       GN_CLIENT_ID: Client_Id_ff75193c46f8e08c01330c3f65f29a30e188690a
       GN_CLIENT_SECRET: Client_Secret_07022555af5dc9945a82a23ad90981d85110b196
-      GN_PUBLIC_CERTIFICATE: /usr/local/app/certs/certificate-chain-homolog.crt
       GN_CERTIFICATE_PATH: /usr/local/app/certs/homologacao-791074-Pix.p12
       GN_CERTIFICATE_PASS: ""
       GN_PIX_KEY: 57b24697-ffdf-49dd-a039-874f626ec0bc
       GN_SANDBOX: "true"
-      GN_WEBHOOK_URL: "https://webhook.site/817cd167-bcb2-423f-80d7-7c7dcb0b29da"
+      GN_WEBHOOK_URL: "https://8cce27f56b11.ngrok-free.app/api/webhook"
 
       FIREBASE_ACCOUNT_PATH: /usr/local/app/firebase-service-account.json
       #FIREBASE_URL: https://solidare-bank.firebaseio.com

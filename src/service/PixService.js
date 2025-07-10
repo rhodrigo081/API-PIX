@@ -1,4 +1,8 @@
+const { response } = require("express");
 const efi = require("../config/efipay");
+const { v4: uuidv4 } = require("uuid");
+
+efi["validateMtls"] = false;
 
 class PixService {
   constructor() {
@@ -7,11 +11,15 @@ class PixService {
 
   /**
    * @param {object} pixData
-   * @returns {object}
+   * @param {string} pixData.amount
+   * @param {string} pixData.donorCPF
+   * @param {string} pixData.donorName
+   * @returns {Promise<object>}
    * @throws {Error}
    */
   async createImmediatePixCharge(pixData) {
     const { amount, donorCPF, donorName } = pixData;
+    const uniqueTxId = uuidv4().replace(/-/g, "");
 
     const pixBody = {
       calendario: { expiracao: 3600 },
@@ -25,8 +33,8 @@ class PixService {
     };
 
     try {
-      const chargeResponse = await this.efi.pixCreateImmediateCharge(
-        [],
+      const chargeResponse = await this.efi.pixCreateCharge(
+        { txid: uniqueTxId },
         pixBody
       );
 
@@ -59,18 +67,18 @@ class PixService {
         const errorDetail =
           apiError.mensagem || apiError.message || JSON.stringify(apiError);
         throw new Error(
-          `Erro: ${errorName} - ${errorDetail} (Status: ${error.response.status})`
+          `Erro API Efí ao criar Pix: ${errorName} - ${errorDetail} (Status: ${error.response.status})`
         );
       }
       throw new Error(
-        `Erro inesperado: ${error.message || "Erro desconhecido"}`
+        `Erro inesperado ao criar Pix: ${error.message || "Erro desconhecido"}`
       );
     }
   }
 
   /**
    * @param {string} txId
-   * @returns {object}
+   * @returns {Promise<object>}
    * @throws {Error}
    */
   async getPixDetails(txId) {
