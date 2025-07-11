@@ -1,26 +1,32 @@
 const { response } = require("express");
 const efi = require("../config/efipay");
 const { v4: uuidv4 } = require("uuid");
+const { ExternalError } = require("../utils/Errors");
 
+// Desabilita a validação MTLS(Apenas em ambiente de desenvolvimento)
 efi["validateMtls"] = false;
 
+// Gerencia as operaçoes relacionadas ao pix
 class PixService {
   constructor() {
     this.efi = efi;
   }
 
   /**
-   * @param {object} pixData
-   * @param {string} pixData.amount
-   * @param {string} pixData.donorCPF
-   * @param {string} pixData.donorName
-   * @returns {Promise<object>}
-   * @throws {Error}
+   * Cria uma nova cobrança imediata ( QR Code dinâmico)
+   * @param {object} pixData - Dados necessários para a cobrança
+   * @param {string} pixData.amount - Valor da cobrança
+   * @param {string} pixData.donorCPF - CPF do doador
+   * @param {string} pixData.donorName - Nome do doador
+   * @returns {Promise<object>} - Detalhes esseciais da cobrança Pix
+   * @throws {ExternalError} - Lança um erro com os detalhes sobre a falha da comunicação com a API EFI
    */
   async createImmediatePixCharge(pixData) {
     const { amount, donorCPF, donorName } = pixData;
+    // Gera o ID de transação único
     const uniqueTxId = uuidv4().replace(/-/g, "");
 
+    // Prepara o corpo da requisição
     const pixBody = {
       calendario: { expiracao: 3600 },
       devedor: {
@@ -33,21 +39,22 @@ class PixService {
     };
 
     try {
+      // Chama o método da API EFI para criar a cobrança Pix
       const chargeResponse = await this.efi.pixCreateCharge(
         { txid: uniqueTxId },
         pixBody
       );
 
-      const txId = chargeResponse.txid || null;
-      const locId = chargeResponse.loc ? chargeResponse.loc.id : null;
-      const qrCodeImage = chargeResponse.location || null;
-      const copyPastePix = chargeResponse.pixCopiaECola || null;
-      const createdAt = chargeResponse.calendario
-        ? chargeResponse.calendario.criacao
-        : null;
+      // Extrai os dados esseciais da resposta da API
+      const txId = chargeResponse.txid;
+      const locId = chargeResponse.loc || chargeResponse.loc.id;
+      const qrCodeImage = chargeResponse.location;
+      const copyPastePix = chargeResponse.pixCopiaECola;
+      const createdAt =
+        chargeResponse.calendario || chargeResponse.calendario.criacao;
 
       if (!txId || !locId || !qrCodeImage || !copyPastePix || !createdAt) {
-        throw new Error(
+        throw new ExternalError(
           "Falha ao obter dados Pix essenciais da Efí. Resposta incompleta ou inesperada."
         );
       }
@@ -66,25 +73,26 @@ class PixService {
           apiError.nome || apiError.name || "Erro desconhecido da API";
         const errorDetail =
           apiError.mensagem || apiError.message || JSON.stringify(apiError);
-        throw new Error(
+        throw new ExternalError(
           `Erro API Efí ao criar Pix: ${errorName} - ${errorDetail} (Status: ${error.response.status})`
         );
       }
-      throw new Error(
+      throw new ExternalError(
         `Erro inesperado ao criar Pix: ${error.message || "Erro desconhecido"}`
       );
     }
   }
 
   /**
-   * @param {string} txId
-   * @returns {Promise<object>}
-   * @throws {Error}
+   * @param {string} txId - Id da transação Pix
+   * @returns {Promise<object>} - Objeto contendo todos os detalhes da cobrança
+   * @throws {ExternalError} - Lança um erro com os detalhes sobre a falha da comunicação com a API EFI
    */
   async getPixDetails(txId) {
     try {
+      // Chama o método da API EFI para detalhar uma cobrança Pix
       const response = await this.efi.pixDetailCharge({ txid: txId });
-      return response;
+      return response; // Resosta da API
     } catch (error) {
       if (error.response && error.response.data) {
         const apiError = error.response.data;
@@ -92,11 +100,11 @@ class PixService {
           apiError.nome || apiError.name || "Erro desconhecido da API";
         const errorDetail =
           apiError.mensagem || apiError.message || JSON.stringify(apiError);
-        throw new Error(
+        throw new ExternalError(
           `Erro API Efí ao consultar Pix: ${errorName} - ${errorDetail} (Status: ${error.response.status})`
         );
       }
-      throw new Error(
+      throw new ExternalError(
         `Erro inesperado ao consultar Pix: ${
           error.message || "Erro desconhecido"
         }`

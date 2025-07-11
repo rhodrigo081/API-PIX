@@ -1,32 +1,47 @@
 const admin = require("firebase-admin");
 const path = require("path");
+const logger = require("../utils/Logger");
+const { ValidationError } = require("../utils/Errors");
 
+// Caminho do arquivo de credenciais do Banco de dados
 const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
 
+// Verifica se o arquivo está definido
 if (!serviceAccountPath) {
-  process.exit(1);
+  logger.fatal("Não foi possível carregar o banco de dados..");
 }
 
+// Armazena as credenciais
 let serviceAccount;
 
+// Tratamento da inicilização do banco de dados
 try {
+  // Contrução de caminho absoluto e carrega o arquivo em JSON
   serviceAccount = require(path.resolve(serviceAccountPath));
 
+  // Validação das credenciais
+  if (
+    !serviceAccount ||
+    !serviceAccount.projectId ||
+    !serviceAccount.private_key ||
+    !serviceAccount.client_email
+  ) {
+    throw new ValidationError(
+      "Verifique as chaves essenciais do banco de dados."
+    );
+  }
+
+  // Inicialização o  banco de dados
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-
-      databaseURL: process.env.FIREBASE_URL,
     });
-    console.log("Firebase Admin SDK inicializado com sucesso!");
+    logger.success("Banco de dados inicializado com sucesso!");
   } else {
-    console.log("Firebase Admin SDK já está em execução!");
+    logger.info("Banco de dados já está em execução!");
   }
-} catch (err) {
-  console.error("Erro: Falha ao inicializar Firebase Admin SDK.");
-  console.error("Detalhes:", err.message);
-  console.error(err);
-  process.exit(1);
+} catch (error) {
+  logger.fatal("Falha ao inicializar Banco de dados.");
 }
 
 module.exports = admin;

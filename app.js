@@ -38,9 +38,7 @@ app.use("/api", webhook);
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+app.listen(PORT);
 
 app.use((err, req, res, next) => {
   console.error("Erro na aplicação:", err.stack);

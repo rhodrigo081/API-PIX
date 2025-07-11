@@ -3,7 +3,7 @@ const {
   ValidationError,
   DatabaseError,
   ExternalError,
-} = require("../errors/Errors");
+} = require("../utils/Errors");
 
 const errorHandler = (err, req, res, next) => {
   if (err instanceof NotFoundError) {
@@ -40,3 +40,5 @@ const errorHandler = (err, req, res, next) => {
     code: "InternalServerError",
   });
 };
+
+module.exports = errorHandler;

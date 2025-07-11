@@ -18,7 +18,6 @@ services:
       GN_WEBHOOK_URL: "https://8cce27f56b11.ngrok-free.app/api/webhook"
 
       FIREBASE_ACCOUNT_PATH: /usr/local/app/firebase-service-account.json
-      #FIREBASE_URL: https://solidare-bank.firebaseio.com
 
       PORT: 3000
       NODE_ENV: development
