@@ -1,3 +1,4 @@
+const { Timestamp } = require("firebase-admin/firestore");
 const admin = require("../config/db");
 const db = admin.firestore();
 const {
@@ -28,7 +29,7 @@ class Donation {
     this.qrCode = qrCode;
     this.copyPaste = copyPaste;
     this.status = status;
-    this.createdAt = createdAt || new Date().toISOString();
+    this.createdAt = createdAt;
   }
 
   async save() {
@@ -109,12 +110,39 @@ class Donation {
     return null;
   }
 
-  static async totalDonation(){
-    try{
-     const snapshot = await db.collection("donations").count().get();
+  static async totalDonation() {
+    try {
+      const snapshot = await db.collection("donations").count().get();
       return snapshot.data().count;
-    } catch(error){
-      throw new DatabaseError(`Erro ao obter a contagem de doações: ${error.message}`)
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao obter a contagem de doações: ${error.message}`
+      );
+    }
+  }
+
+  static async donationByMonth(month, year) {
+    if (!month || !year || month < 1 || month > 12 || year < 2025) {
+      throw new ValidationError("Mês ou ano inválidos.");
+    }
+
+    const startMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    const endMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+    const startDate = Timestamp.fromDate(startMonth);
+    const endDate = Timestamp.fromDate(endMonth);
+
+    try {
+      const snapshot = await db
+        .collection("donations")
+        .where("createdAt", ">=", startDate)
+        .where("createdAt", "<=", endDate)
+        .count()
+        .get();
+
+      return snapshot.data().count;
+    } catch (error) {
+      throw new DatabaseError(`Erro ao obter contagem: ${erro}`);
     }
   }
 }

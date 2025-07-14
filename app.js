@@ -33,8 +33,8 @@ app.use(
 );
 
 app.use(errorHandler);
-app.use("/api", donationRoutes);
-app.use("/api", webhook);
+app.use("/api/doacoes", donationRoutes);
+app.use("/api/webhook", webhook);
 
 const PORT = process.env.PORT;
 

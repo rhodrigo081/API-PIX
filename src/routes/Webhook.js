@@ -7,7 +7,7 @@ const donationService = require("../service/DonationService");
  * Ponto de entrada base para configuração de webhooks
  * @returns {200} - Confirma que o webhook base está configurado
  */
-router.post("/webhook", async (req, res) => {
+router.post("/", async (req, res) => {
   res
     .status(200)
     .send(
@@ -23,7 +23,7 @@ router.post("/webhook", async (req, res) => {
  * @returns {200} - Confirmação de recebimento
  * @returns {500} - Erro interno
  */
-router.post("/webhook/pix", async (req, res) => {
+router.post("/pix", async (req, res) => {
   try {
     const pixNotificationData = req.body.pix;
 
