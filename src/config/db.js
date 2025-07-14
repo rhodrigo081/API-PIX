@@ -19,18 +19,6 @@ try {
   // Contrução de caminho absoluto e carrega o arquivo em JSON
   serviceAccount = require(path.resolve(serviceAccountPath));
 
-  // Validação das credenciais
-  if (
-    !serviceAccount ||
-    !serviceAccount.projectId ||
-    !serviceAccount.private_key ||
-    !serviceAccount.client_email
-  ) {
-    throw new ValidationError(
-      "Verifique as chaves essenciais do banco de dados."
-    );
-  }
-
   // Inicialização o  banco de dados
   if (!admin.apps.length) {
     admin.initializeApp({

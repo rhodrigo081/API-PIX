@@ -25,10 +25,8 @@ router.post("/webhook", async (req, res) => {
  */
 router.post("/webhook/pix", async (req, res) => {
   try {
-    // Extração dos dados da notificação
     const pixNotificationData = req.body.pix;
 
-    // Validação do payload
     if (
       !Array.isArray(pixNotificationData) ||
       pixNotificationData.length === 0
@@ -36,34 +34,46 @@ router.post("/webhook/pix", async (req, res) => {
       return res.status(200).send("Nenhum dado de notificação processado.");
     }
 
-    // Rastrea se a notificação foi processada com sucesso
-    let hasProcessedSuccessfully = false;
+    let successfulProcesses = 0;
+    const failedTxIds = [];
 
-    // Itera sobre cada notificação pix no payload
     for (const pixPayload of pixNotificationData) {
       const txId = pixPayload.txid;
 
-      // Se o ID da transação estiver ausente, pula para próxima notificação
       if (!txId) {
         continue;
       }
 
       try {
         await donationService.handlePixWebhook(pixPayload);
-        hasProcessedSuccessfully = true;
+        successfulProcesses++;
       } catch (error) {
-        throw error;
+        console.error(
+          `Erro ao processar Pix para txId ${txId}:`,
+          error.message || error
+        );
+        failedTxIds.push(txId);
       }
     }
-
-    if (hasProcessedSuccessfully) {
-      res.status(200).send("Pix recebido e processado.");
+    if (successfulProcesses > 0 && failedTxIds.length === 0) {
+      res.status(200).send("Pix recebido e processado com sucesso.");
+    } else if (successfulProcesses > 0 && failedTxIds.length > 0) {
+      res
+        .status(200)
+        .send(
+          `Pix recebido. ${successfulProcesses} processados com sucesso. Falha em ${
+            failedTxIds.length
+          } transações: [${failedTxIds.join(", ")}].`
+        );
     } else {
       res
         .status(200)
-        .send("Nenhuma notificação Pix válida para processamento encontrada.");
+        .send(
+          "Nenhuma notificação Pix válida para processamento encontrada ou todas falharam."
+        );
     }
   } catch (error) {
+    console.error("Erro interno catastrófico no webhook Pix:", error);
     res.status(500).send("Erro interno ao processar o webhook.");
   }
 });

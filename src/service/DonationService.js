@@ -93,18 +93,18 @@ class DonationService {
 
     /**
      *  Buscar doaçao existente no banco de dados
-     *  Necessária para evitar criação de doação duplicada, 
+     *  Necessária para evitar criação de doação duplicada,
      * caso o webhook seja reenviado
      */
-    let donation = await this.getDonationByTxId(txId);
+    let donation = await DonationModel.findByTxId(txId);
 
     // Confirmação de status
     try {
       const efiChargeDetails = await pixService.getPixDetails(txId);
 
-      const officialStatus = efiChargeDetails.status;         // Status da cobrança no gateway
-      const valorOriginal = efiChargeDetails.valor.original;  // Valor da cobrança
-      const devedorEfi = efiChargeDetails.devedor;            // Dados do devedor
+      const officialStatus = efiChargeDetails.status; // Status da cobrança no gateway
+      const valorOriginal = efiChargeDetails.valor.original; // Valor da cobrança
+      const devedorEfi = efiChargeDetails.devedor; // Dados do devedor
 
       // Verifica se o pagamento foi confirmado
       const isPaymentConfirmed = officialStatus === "CONCLUIDA";
@@ -149,7 +149,7 @@ class DonationService {
         /**
          * Se o pagamento nao foi confirmado e a doação não existe no banco de dados
          * Atualiza o status da doação para refletir o status oficial do gateway
-         * */ 
+         * */
         if (donation.status !== officialStatus) {
           donation.status = officialStatus;
           await donation.save();
@@ -187,16 +187,13 @@ class DonationService {
    */
   async getDonationById(id) {
     // Validação do ID
-    if (!id) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       throw new ValidationError("O ID é obrigatório!");
     }
     // Busca a doação
     try {
-      const donationSearched = await DonationModel.findById(id);
+      return await DonationModel.findById(id);
       // Caso doação não seja encontrada
-      if (!donationSearched) {
-        throw new NotFoundError(`Doação com ID ${id} não encontrada.`);
-      }
     } catch (error) {
       if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
@@ -225,7 +222,7 @@ class DonationService {
       // Buscar a doação
       return await DonationModel.findByDonorName(donorName);
     } catch (error) {
-      if (error instanceof ValidationError) {
+      if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
       }
       throw new DatabaseError(
