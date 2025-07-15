@@ -3,7 +3,7 @@ const path = require("path");
 const logger = require("../utils/Logger");
 
 // Caminho do arquivo de credenciais do Banco de dados
-const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
+const serviceAccountPath = process.env.FIREBASE_ACCOUNT_JSON;
 
 // Verifica se o arquivo está definido
 if (!serviceAccountPath) {
