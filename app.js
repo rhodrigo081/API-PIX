@@ -35,6 +35,7 @@ app.use(
 app.use(errorHandler);
 app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
+app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.use((req, res, next) => {
   res.status(404).json({ message: "Rota não encontrada." });
