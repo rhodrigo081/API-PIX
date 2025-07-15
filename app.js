@@ -38,7 +38,7 @@ app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.get("/", (req, res) => {
-  res.json({ message: "API Solidare está online!" });
+  res.json({ message: "API está online!" });
 });
 
 app.use((req, res, next) => {
