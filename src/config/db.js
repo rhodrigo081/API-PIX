@@ -16,7 +16,7 @@ let serviceAccount;
 // Tratamento da inicilização do banco de dados
 try {
   // Contrução de caminho absoluto e carrega o arquivo em JSON
-  serviceAccount = require(path.resolve(serviceAccountPath));
+  serviceAccount = JSON.parse(serviceAccountPath);
 
   // Inicialização o  banco de dados
   if (!admin.apps.length) {
