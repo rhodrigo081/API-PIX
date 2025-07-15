@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const errorHandler = require("./src/middleware/ErrorHandler")
+const errorHandler = require("./src/middleware/ErrorHandler");
 
 require("./src/config/db");
 require("./src/config/efipay");
@@ -36,9 +36,9 @@ app.use(errorHandler);
 app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
 
-const PORT = process.env.PORT;
-
-app.listen(PORT);
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Rota não encontrada." });
+});
 
 app.use((err, req, res, next) => {
   console.error("Erro na aplicação:", err.stack);
@@ -48,3 +48,5 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err : {},
   });
 });
+
+module.exports = app;
