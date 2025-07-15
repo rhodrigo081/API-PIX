@@ -37,6 +37,10 @@ app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
+app.get("/", (req, res) => {
+  res.json({ message: "API Solidare está online!" });
+});
+
 app.use((req, res, next) => {
   res.status(404).json({ message: "Rota não encontrada." });
 });
