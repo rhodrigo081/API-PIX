@@ -1,8 +1,7 @@
 const admin = require("firebase-admin");
 const path = require("path");
 const logger = require("../utils/Logger");
-const { ValidationError } = require("../utils/Errors");
-
+const fs = require("fs");
 // Caminho do arquivo de credenciais do Banco de dados
 const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
 
@@ -17,7 +16,13 @@ let serviceAccount;
 // Tratamento da inicilização do banco de dados
 try {
   // Contrução de caminho absoluto e carrega o arquivo em JSON
-  serviceAccount = require(path.resolve(serviceAccountPath));
+  const absoluteServiceAccountPath = path.resolve(process.cwd(), serviceAccountPath);
+
+  // Lê o conteúdo do arquivo JSON
+  const serviceAccountContent = fs.readFileSync(absoluteServiceAccountPath, 'utf8');
+
+  // Passa o conteúdo para um objeto JSON
+  serviceAccount = JSON.parse(serviceAccountContent);
 
   // Inicialização o  banco de dados
   if (!admin.apps.length) {
