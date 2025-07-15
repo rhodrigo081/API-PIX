@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "app.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["firebase-service-account.json"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "routes": [

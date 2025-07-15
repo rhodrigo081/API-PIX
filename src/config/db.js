@@ -1,34 +1,24 @@
 const admin = require("firebase-admin");
+const path = require("path");
 const logger = require("../utils/Logger");
-// const fs = require("fs"); // No longer needed if using base64 string
-// const path = require("path"); // No longer needed
 
-// Caminho do arquivo de credenciais do Banco de dados (agora é o conteúdo base64)
-const serviceAccountBase64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+// Caminho do arquivo de credenciais do Banco de dados
+const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
 
-if (!serviceAccountBase64) {
-  logger.fatal(
-    "Erro: Variável de ambiente FIREBASE_SERVICE_ACCOUNT_BASE64 NÃO DEFINIDA."
-  );
-  throw new Error("FIREBASE_SERVICE_ACCOUNT_BASE64 is not defined.");
+// Verifica se o arquivo está definido
+if (!serviceAccountPath) {
+  logger.fatal("Não foi possível carregar o banco de dados..");
 }
 
+// Armazena as credenciais
 let serviceAccount;
 
+// Tratamento da inicilização do banco de dados
 try {
-  logger.info("Conteúdo de credenciais do Firebase lido da ENV (Base64).");
+  // Contrução de caminho absoluto e carrega o arquivo em JSON
+  serviceAccount = JSON.parse(serviceAccountPath);
 
-  // Decodifica de Base64 e faz o parse do JSON
-  const serviceAccountContent = Buffer.from(
-    serviceAccountBase64,
-    "base64"
-  ).toString("utf8");
-  serviceAccount = JSON.parse(serviceAccountContent);
-
-  logger.info(
-    "Conteúdo de credenciais do Firebase decodificado e parseado com sucesso para JSON."
-  );
-
+  // Inicialização o  banco de dados
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -38,17 +28,7 @@ try {
     logger.info("Banco de dados já está em execução!");
   }
 } catch (error) {
-  console.error("=================================================");
-  console.error("ERRO CRÍTICO NA INICIALIZAÇÃO DO BANCO DE DADOS:");
-  console.error("Mensagem do erro:", error.message);
-  console.error("Nome do erro:", error.name);
-  console.error("Stack trace do erro:");
-  console.error(error.stack);
-  console.error("=================================================");
-  logger.fatal(
-    `Falha CRÍTICA ao inicializar Banco de dados Firebase. Ver logs detalhados acima.`
-  );
-  throw error;
+  logger.fatal("Falha ao inicializar Banco de dados.");
 }
 
 module.exports = admin;
