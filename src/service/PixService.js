@@ -1,4 +1,3 @@
-const { response } = require("express");
 const efi = require("../config/efipay");
 const { v4: uuidv4 } = require("uuid");
 const { ExternalError } = require("../utils/Errors");

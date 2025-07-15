@@ -15,7 +15,7 @@ services:
       GN_CERTIFICATE_PASS: ""
       GN_PIX_KEY: 57b24697-ffdf-49dd-a039-874f626ec0bc
       GN_SANDBOX: "true"
-      GN_WEBHOOK_URL: "https://501e5c572fd3.ngrok-free.app/api/webhook"
+      GN_WEBHOOK_URL: "https://e37c527ef462.ngrok-free.app/api/webhook"
 
       FIREBASE_ACCOUNT_PATH: /usr/local/app/firebase-service-account.json
 

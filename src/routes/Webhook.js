@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const donationService = require("../service/DonationService");
-
+const DonationService = require("../service/DonationService");
+const { ExternalError } = require("../utils/Errors");
+const donationServiceInstance = new DonationService();
 /**
  * Rota POST /api/webhook
  * Ponto de entrada base para configuração de webhooks
@@ -45,14 +46,10 @@ router.post("/pix", async (req, res) => {
       }
 
       try {
-        await donationService.handlePixWebhook(pixPayload);
+        await donationServiceInstance.handlePixWebhook(pixPayload);
         successfulProcesses++;
       } catch (error) {
-        console.error(
-          `Erro ao processar Pix para txId ${txId}:`,
-          error.message || error
-        );
-        failedTxIds.push(txId);
+        throw new ExternalError();
       }
     }
     if (successfulProcesses > 0 && failedTxIds.length === 0) {
@@ -73,7 +70,6 @@ router.post("/pix", async (req, res) => {
         );
     }
   } catch (error) {
-    console.error("Erro interno catastrófico no webhook Pix:", error);
     res.status(500).send("Erro interno ao processar o webhook.");
   }
 });

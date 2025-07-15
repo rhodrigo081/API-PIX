@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const donationService = require("../service/DonationService");
-const Donation = require("../models/Donation");
-const { success } = require("../utils/Logger");
-const { DatabaseError, ValidationError } = require("../utils/Errors");
+const { ValidationError } = require("../utils/Errors");
+const DonationService = require("../service/DonationService");
+const donationServiceInstance = new DonationService();
 
 /**
  * Rota POST /api/doacoes
@@ -22,19 +21,18 @@ router.post("/", async (req, res, next) => {
     const { donorCPF, donorName, amount } = req.body;
 
     // Chama o serviço para criação da doação e cobrança pix
-    const pixDetails = await donationService.createDonation({
+    const pixDetails = await donationServiceInstance.createDonation({
       donorCPF,
       donorName,
       amount,
     });
 
     res.status(201).json({
-      message: [
-        `Doador: ${donorName} - Valor: R$ ${amount}`,
-        `Transação: ${pixDetails.txId}`,
-        `QR Code: ${pixDetails.qrCode}`,
-        `Copia e Cola: ${pixDetails.copyPaste}`,
-      ],
+      donor: donorName,
+      value: amount,
+      txId: pixDetails.txId,
+      qrCode: pixDetails.qrCode,
+      copyPaste: pixDetails.copyPaste,
     });
   } catch (error) {
     next(error);
@@ -53,7 +51,7 @@ router.post("/", async (req, res, next) => {
 router.get("/id/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const donation = await donationService.getDonationById(id);
+    const donation = await DonationService.findById(id);
 
     if (donation) {
       res.status(200).json(donation);
@@ -77,7 +75,7 @@ router.get("/id/:id", async (req, res, next) => {
 router.get("/nome-do-doador/:donorName", async (req, res, next) => {
   try {
     const { donorName } = req.params;
-    const donations = await donationService.getDonationByDonorName(donorName);
+    const donations = await DonationService.findByDonorName(donorName);
 
     if (donations.length > 0) {
       res.status(200).json(donations);
@@ -93,7 +91,7 @@ router.get("/nome-do-doador/:donorName", async (req, res, next) => {
 
 router.get("/contagem", async (req, res, next) => {
   try {
-    const donationsCount = await Donation.totalDonation();
+    const donationsCount = await DonationService.totalDonation();
     res.status(200).json(`Total de Doações: ${donationsCount}`);
   } catch (error) {
     next(error);
@@ -105,30 +103,60 @@ router.get("/contagem/mes", async (req, res, next) => {
     const { month, year } = req.query;
 
     if (!month || !year) {
-      throw new ValidationError(
-        "Mês e Ano Obrigatórios."
-      );
+      throw new ValidationError("Mês e Ano Inválidos.");
     }
 
-    const handleMonth = parseInt(month, 10);
-    const handleYear = parseInt(year, 10);
+    const requestedMonth = parseInt(month, 10);
+    const requestedYear = parseInt(year, 10);
 
-    if (isNaN(handleMonth) || isNaN(handleYear)) {
-      throw new ValidationError(
-        "Mês e Ano Inválidos."
-      );
+    if (isNaN(requestedMonth) || isNaN(requestedYear)) {
+      throw new ValidationError("Mês e Ano Inválidos.");
     }
 
-    const donationCount = await Donation.donationByMonth(
-      handleMonth,
-      handleYear
+    const donationCount = await DonationService.donationByMonth(
+      requestedMonth,
+      requestedYear
     );
 
     res.status(200).json({
-      month: handleMonth,
-      year: handleYear,
+      month: requestedMonth,
+      year: requestedYear,
       quantify: donationCount,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/contagem/ano", async (req, res, next) => {
+  try {
+    const { year } = req.query;
+
+    if (!year) {
+      throw new ValidationError("Ano Inválido");
+    }
+
+    const requestedYear = parseInt(year, 10);
+
+    if (isNaN(requestedYear)) {
+      throw new ValidationError("Ano inválido");
+    }
+
+    const donationCount = await DonationService.donationByYear(requestedYear);
+
+    res.status(200).json({
+      year: requestedYear,
+      quantify: donationCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/evolucao", async (req, res, next) => {
+  try {
+    const evolutionData = await DonationService.donationEvolution();
+    res.status(200).json(evolutionData);
   } catch (error) {
     next(error);
   }

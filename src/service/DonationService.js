@@ -1,4 +1,6 @@
 const admin = require("../config/db");
+const db = admin.firestore();
+const { Timestamp } = require("firebase-admin/firestore");
 const {
   ValidationError,
   DatabaseError,
@@ -12,7 +14,7 @@ const pixService = require("./PixService");
 class DonationService {
   /**
    * Criação de uma nova doação e cobrança Pix
-   * @param {object} data - Dados fornecidos pelo doados
+   * @param {object} data - Dados fornecidos pelo doador
    * @param {string} data.donorCPF - CPF do doador
    * @param {string} data.donorName - Nome do doador
    * @param {number} data.amout - Valor da doação
@@ -96,7 +98,7 @@ class DonationService {
      *  Necessária para evitar criação de doação duplicada,
      * caso o webhook seja reenviado
      */
-    let donation = await DonationModel.findByTxId(txId);
+    let donation = await DonationService.findByTxId(txId);
 
     // Confirmação de status
     try {
@@ -185,14 +187,24 @@ class DonationService {
    * @throws {NotFoundError} - Se nenhuma doação for encontrada
    * @throws {DatabaseError} - Se ocorrer um erro durando a busca no banco de dados
    */
-  async getDonationById(id) {
+  static async findById(id) {
     // Validação do ID
     if (!id || typeof id !== "string" || id.trim() === "") {
       throw new ValidationError("O ID é obrigatório!");
     }
     // Busca a doação
     try {
-      return await DonationModel.findById(id);
+      const docRef = db.collection("donations").doc(id);
+      const donationSnapshot = await docRef.get();
+
+      if (donationSnapshot.exists) {
+        return new DonationModel({
+          id: donationSnapshot.id,
+          ...donationSnapshot.data(),
+        });
+      } else {
+        throw new NotFoundError("Doação não encontrada.");
+      }
       // Caso doação não seja encontrada
     } catch (error) {
       if (error instanceof ValidationError || error instanceof NotFoundError) {
@@ -209,7 +221,7 @@ class DonationService {
    * @throws {ValidationError} - Se o nome do doador for vazio ou não for uma string
    * @throws {DatabaseError} - Se ocorrer um erro durante a buscar no banco de dados
    */
-  async getDonationByDonorName(donorName) {
+  static async findByDonorName(donorName) {
     // Validação do nome do doador
     if (
       !donorName ||
@@ -220,7 +232,19 @@ class DonationService {
     }
     try {
       // Buscar a doação
-      return await DonationModel.findByDonorName(donorName);
+      const snapshot = await db
+        .collection("donations")
+        .where("donorName", "==", donorName)
+        .get();
+
+      if (!snapshot.empty) {
+        const donations = snapshot.docs.map(
+          (doc) => new DonationModel({ id: doc.id, ...doc.data() })
+        );
+        return donations;
+      } else {
+        return [];
+      }
     } catch (error) {
       if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
@@ -230,6 +254,151 @@ class DonationService {
       );
     }
   }
+
+  static async findByTxId(txId) {
+    try {
+      const snapshot = await db
+        .collection("donations")
+        .where("txId", "==", txId)
+        .limit(1)
+        .get();
+      if (!snapshot.empty) {
+        const donation = snapshot.docs[0];
+        return new DonationModel({ id: donation.id, ...donation.data() });
+      }
+      return null;
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao buscar doação por TxId: ${error.message}`
+      );
+    }
+  }
+
+  static async totalDonation() {
+    try {
+      const snapshot = await db.collection("donations").count().get();
+      return snapshot.data().count;
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao obter a contagem total de doações: ${error.message}`
+      );
+    }
+  }
+
+  static async donationByMonth(month, year) {
+    if (!month || !year || month < 1 || month > 12 || year < 2025) {
+      throw new ValidationError("Mês ou ano inválidos.");
+    }
+
+    const startMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
+    const endMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+    const startDateTimestamp = Timestamp.fromDate(startMonth);
+    const endDateTimeStamp = Timestamp.fromDate(endMonth);
+
+    try {
+      const snapshot = await db
+        .collection("donations")
+        .where("createdAt", ">=", startDateTimestamp)
+        .where("createdAt", "<=", endDateTimeStamp)
+        .count()
+        .get();
+
+      return snapshot.data().count;
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao obter contagem de doações por mês: ${error.message}`
+      );
+    }
+  }
+
+  static async donationByYear(year) {
+    if (!year || year < 2025) {
+      throw new ValidationError("Ano inválido");
+    }
+
+    const startYear = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+    const endYear = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
+
+    const startDateTimestamp = Timestamp.fromDate(startYear);
+    const endDateTimeStamp = Timestamp.fromDate(endYear);
+
+    try {
+      const snapshot = await db
+        .collection("donations")
+        .where("createdAt", ">=", startDateTimestamp)
+        .where("createdAt", "<=", endDateTimeStamp)
+        .count()
+        .get();
+      return snapshot.data().count;
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao obter total de doações no ano ${year}: ${error.message}`
+      );
+    }
+  }
+
+  static async donationEvolution() {
+    try {
+      const currentDate = new Date();
+      const sixMonthsAgo = new Date();
+
+      sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
+      sixMonthsAgo.setDate(1);
+
+      const startDateTimestamp = Timestamp.fromDate(sixMonthsAgo);
+      const snapshot = await db
+        .collection("donations")
+        .where("createdAt", ">=", startDateTimestamp)
+        .orderBy("createdAt", "asc")
+        .get();
+
+      const monthlyData = {};
+
+      snapshot.docs.forEach((doc) => {
+        const donation = new DonationModel({ id: doc.id, ...doc.data() });
+        const createdAtDate = donation.createdAt.toDate();
+        const year = createdAtDate.getFullYear();
+        const month = createdAtDate.getMonth() + 1;
+
+        const key = `${year}-${String(month).padStart(2, "0")}`;
+
+        if (!monthlyData[key]) {
+          monthlyData[key] = {
+            month: month,
+            year: year,
+            totalDonations: 0,
+            totalAmount: 0,
+          };
+        }
+        monthlyData[key].totalDonations += 1;
+        monthlyData[key].totalAmount += donation.amount;
+      });
+      const result = [];
+      for (let i = 0; i < 6; i++) {
+        const date = new Date();
+        date.setMonth(currentDate.getMonth() - i);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const key = `${year}-${String(month).padStart(2, "0")}`;
+
+        result.unshift(
+          monthlyData[key] || {
+            month: month,
+            year: year,
+            totalDonations: 0,
+            totalAmount: 0,
+          }
+        );
+      }
+
+      return result;
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao obter evolução das doações: ${error.message}`
+      );
+    }
+  }
 }
 
-module.exports = new DonationService();
+module.exports = DonationService;
