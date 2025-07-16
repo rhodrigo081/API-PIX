@@ -1,13 +1,7 @@
 const Gerencianet = require("gn-api-sdk-node");
-const fs = require("fs");
 const path = require("path");
 
 const certPath = path.resolve(__dirname, "cert", "homologacao-791074-Pix.p12");
-
-if(process.env.GN_CERTIFICATE_PATH){
-  const buffer = Buffer.from(process.env.GN_CERTIFICATE_PATH, "base64");
-  fs.writeFileSync(certPath, buffer)
-}
 
 // Credenciais da conta bancária
 const efiOptions = {
