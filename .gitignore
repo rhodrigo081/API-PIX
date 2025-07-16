@@ -10,3 +10,9 @@ yarn-error.log*
 build/
 dist/
 tmp/
+certs/
+.dockerignore
+Dockerfile
+.yml
+.txt
+firebase-service-account.json

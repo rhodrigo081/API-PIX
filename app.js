@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const errorHandler = require("./src/middleware/ErrorHandler");
+const { webhookConfig } = require("./src/middleware/EFIAuth");
 
 require("./src/config/db");
 require("./src/config/efipay");
@@ -53,5 +54,7 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err : {},
   });
 });
+
+await webhookConfig();
 
 module.exports = app;
