@@ -1,14 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const errorHandler = require("./src/middleware/ErrorHandler");
-const { webhookConfig } = require("./src/middleware/EFIAuth");
 
 require("./src/config/db");
 require("./src/config/efipay");
 
 const donationRoutes = require("./src/routes/DonationRoutes");
 const webhook = require("./src/routes/Webhook");
-const { ExternalError } = require("./src/utils/Errors");
 
 const app = express();
 
