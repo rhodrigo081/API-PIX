@@ -39,12 +39,6 @@ app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-try {
-  await webhookConfig();
-} catch (error) {
-  throw new ExternalError(`Erro ao configurar webhook`);
-}
-
 app.get("/", (req, res) => {
   res.json({ message: "API está online!" });
 });
@@ -57,8 +51,6 @@ app.use((err, req, res, next) => {
   console.error("Erro na aplicação:", err.stack);
   res.status(err.statusCode || 500).json({
     message: err.message || "Erro interno do servidor.",
-
-    error: process.env.NODE_ENV === "development" ? err : {},
   });
 });
 

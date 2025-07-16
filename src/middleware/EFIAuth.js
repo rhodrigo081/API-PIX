@@ -77,22 +77,7 @@ async function webhookConfig() {
     const response = await axios.post(authWebhookUrl, payload, {
       headers: headers,
     });
-    console.log("[EFIAuth] Webhook da Efí configurado/atualizado com sucesso!");
-    console.log(`[EFIAuth] Resposta da Efí: ${JSON.stringify(response.data)}`);
   } catch (error) {
-    console.error(
-      "[EFIAuth] Erro ao configurar webhook na Efí:",
-      error.message
-    );
-    if (error.response) {
-      console.error("[EFIAuth] Status Code:", error.response.status);
-      console.error("[EFIAuth] Response Body:", error.response.data);
-      throw new ExternalError(
-        `Erro da API Efí ao configurar webhook: ${
-          error.response.status
-        } - ${JSON.stringify(error.response.data)}`
-      );
-    }
     throw new ExternalError(
       `Erro inesperado ao configurar webhook: ${error.message}`
     );
