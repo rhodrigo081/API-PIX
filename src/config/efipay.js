@@ -1,32 +1,41 @@
 const Gerencianet = require("gn-api-sdk-node");
-const fs = require("fs");
-const path = require("path");
+const fs = require("fs"); // Importe o módulo fs
+const path = require("path"); // Importe o módulo path
 
-const tempDir = "/tmp";
-const certFileName = "homologacao-791074-Pix.p12";
-const certPath = path.join(tempDir, certFileName);
+// --- PASSO 1: DEFINIR O CAMINHO TEMPORÁRIO E ESCREVER O CERTIFICADO ---
 
+// Define o diretório temporário no Vercel. Este é o único local gravável.
+const tempDir = "/tmp"; 
+const certFileName = "homologacao-791074-Pix.p12"; // Nome do arquivo do certificado
+const certPath = path.join(tempDir, certFileName); // Caminho completo do arquivo temporário
+
+// Verifica se a variável de ambiente do certificado está definida
 if (!process.env.GN_CERTIFICATE_PATH) {
-  console.error("Variável de ambiente GN_CERTIFICATE_PATH não encontrada. O certificado PIX é obrigatório.");
-  throw new Error("GN_CERTIFICATE_PATH não configurado. Certificado PIX não pode ser carregado.");
+  console.error("ERRO: Variável de ambiente GN_CERTIFICATE_PATH não encontrada. Certificado PIX é obrigatório.");
+  throw new Error("GN_CERTIFICATE_PATH não configurado.");
 }
 
+// Tenta decodificar o Base64 e escrever o arquivo do certificado no /tmp
 try {
   const buffer = Buffer.from(process.env.GN_CERTIFICATE_PATH, "base64");
   fs.writeFileSync(certPath, buffer);
-  console.log("Certificado PIX escrito com sucesso em:", certPath);
+  console.log(`Certificado PIX gravado com sucesso em: ${certPath}`);
 } catch (error) {
-  console.error("Erro ao escrever o certificado PIX no disco:", error);
-  throw new Error("Falha ao escrever o certificado PIX no disco. Verifique as permissões ou o caminho.");
+  console.error(`ERRO: Falha ao gravar o certificado PIX em ${certPath}. Detalhes:`, error.message);
+  // Lança o erro para impedir que a aplicação continue sem o certificado
+  throw new Error("Falha crítica ao carregar o certificado PIX.");
 }
 
+// --- PASSO 2: INICIALIZAR A GERENCIANET COM O CAMINHO DO ARQUIVO ---
 
 // Credenciais da conta bancária
 const efiOptions = {
-  sandbox:          process.env.GN_SANDBOX,
-  client_id:        process.env.GN_CLIENT_ID,
-  client_secret:    process.env.GN_CLIENT_SECRET,
-  certificate:      process.env.GN_CERTIFICATE_PATH,
+  // Converte a string "true"/"false" para booleano
+  sandbox: process.env.GN_SANDBOX === "true", 
+  client_id: process.env.GN_CLIENT_ID,
+  client_secret: process.env.GN_CLIENT_SECRET,
+  // AGORA, passe o caminho do arquivo temporário
+  certificate: certPath, 
   certificate_pass: process.env.GN_CERTIFICATE_PASSWORD || "",
 };
 
@@ -35,7 +44,6 @@ try {
   module.exports = efi;
   console.log("Integração Gerencianet/Efí inicializada com sucesso!");
 } catch (error) {
-  console.error("Erro ao inicializar a integração Gerencianet/Efí:", error);
-  throw new Error("Falha na inicialização da integração Pix com a Gerencianet/Efí.");
+  console.error("ERRO: Falha ao inicializar a integração Gerencianet/Efí. Detalhes:", error.message);
+  throw new Error("Falha na inicialização da integração Pix.");
 }
-module.exports = efi;
