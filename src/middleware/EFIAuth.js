@@ -1,21 +1,31 @@
 const axios = require("axios");
-
-const { ExternalError } = require("../utils/Errors");
+const { ExternalError, ValidationError } = require("../utils/Errors");
 
 const clientId = process.env.GN_CLIENT_ID;
 const clientSecret = process.env.GN_CLIENT_SECRET;
-
 const tokenUrl = process.env.TOKEN_URL;
-const webhookUrl = process.env.GN_WEBHOOK_URL;
+const authWebhookUrl = process.env.GN_AUTHWEBHOOK_URL;
+const publicWebhookUrl = process.env.GN_WEBHOOK_URL;
 
-let acessToken = null;
+if (
+  !clientId ||
+  !clientSecret ||
+  !tokenUrl ||
+  !authWebhookUrl ||
+  !publicWebhookUrl
+) {
+  throw new ValidationError("Credenciais Inválidas.")
+}
+
+let accessToken = null;
 let tokenExpiresAt = 0;
 
 async function getToken() {
-  if (acessToken && Date.now() < tokenExpiresAt - 60 * 1000) {
-    return acessToken;
+  if (accessToken && Date.now() < tokenExpiresAt - 60 * 1000) {
+    return accessToken;
   }
 
+  console.log("[EFIAuth] Obtendo novo token da Efí...");
   try {
     const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
       "base64"
@@ -32,18 +42,18 @@ async function getToken() {
 
     const response = await axios.post(tokenUrl, payload, { headers: headers });
 
-    const tokeData = response.data;
-    acessToken = tokeData.acessToken;
-    const expireInSeconds = tokeData.expires_in;
+    const tokenData = response.data;
+    accessToken = tokenData.access_token;
+    const expiresInSeconds = tokenData.expires_in;
 
-    if (acessToken && expireInSeconds) {
-      tokenExpiresAt = Date.now() + expireInSeconds * 1000;
-      return acessToken;
+    if (accessToken && expiresInSeconds) {
+      tokenExpiresAt = Date.now() + expiresInSeconds * 1000;
+      return accessToken;
     } else {
-      return null;
+      throw new ExternalError("Resposta incompleta da API de token da Efí.");
     }
   } catch (error) {
-    throw new ExternalError(`Erro ao obter toke: ${error}`);
+    throw new ExternalError(`Erro inesperado ao obter token: ${error.message}`);
   }
 }
 
@@ -59,17 +69,34 @@ async function webhookConfig() {
     "Content-Type": "application/json",
   };
 
-  const payLoad = {
-    webhookUrl: process.env.GN_WEBHOOK_URL,
+  const payload = {
+    webhookUrl: publicWebhookUrl,
   };
 
-  try{
-
-    const response = await axios.post(webhookUrl, payLoad, {headers: headers});
-
-  } catch(error){
-    throw new ExternalError(`Erro ao configurar webhook: ${error}`)
+  try {
+    const response = await axios.post(authWebhookUrl, payload, {
+      headers: headers,
+    });
+    console.log("[EFIAuth] Webhook da Efí configurado/atualizado com sucesso!");
+    console.log(`[EFIAuth] Resposta da Efí: ${JSON.stringify(response.data)}`);
+  } catch (error) {
+    console.error(
+      "[EFIAuth] Erro ao configurar webhook na Efí:",
+      error.message
+    );
+    if (error.response) {
+      console.error("[EFIAuth] Status Code:", error.response.status);
+      console.error("[EFIAuth] Response Body:", error.response.data);
+      throw new ExternalError(
+        `Erro da API Efí ao configurar webhook: ${
+          error.response.status
+        } - ${JSON.stringify(error.response.data)}`
+      );
+    }
+    throw new ExternalError(
+      `Erro inesperado ao configurar webhook: ${error.message}`
+    );
   }
 }
 
-module.exports = {webhookConfig}
+module.exports = { webhookConfig };

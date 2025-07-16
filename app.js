@@ -8,6 +8,7 @@ require("./src/config/efipay");
 
 const donationRoutes = require("./src/routes/DonationRoutes");
 const webhook = require("./src/routes/Webhook");
+const { ExternalError } = require("./src/utils/Errors");
 
 const app = express();
 
@@ -38,6 +39,8 @@ app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
+await webhookConfig();
+
 app.get("/", (req, res) => {
   res.json({ message: "API está online!" });
 });
@@ -54,7 +57,5 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === "development" ? err : {},
   });
 });
-
-await webhookConfig();
 
 module.exports = app;
