@@ -67,7 +67,7 @@ class DonationService {
         createdAt: pixChargeDetails.createdAt,
       };
     } catch (error) {
-      if (erro instanceof ValidationError || error instanceof DatabaseError) {
+      if (error instanceof ValidationError || error instanceof DatabaseError) {
         throw error;
       }
 
