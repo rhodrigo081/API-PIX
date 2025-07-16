@@ -39,7 +39,11 @@ app.use("/api/doacoes", donationRoutes);
 app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-await webhookConfig();
+try {
+  await webhookConfig();
+} catch (error) {
+  throw new ExternalError(`Erro ao configurar webhook`);
+}
 
 app.get("/", (req, res) => {
   res.json({ message: "API está online!" });
