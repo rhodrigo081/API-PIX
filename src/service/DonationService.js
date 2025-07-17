@@ -26,9 +26,9 @@ class DonationService {
     const { donorCPF, donorName, amount } = data;
 
     // Validação dos campos obrigatórios
-    if (!donorCPF || !donorName || !amount) {
+    if (!donorCPF || !amount) {
       throw new ValidationError(
-        "Todos os campos são obrigatórios (CPF, Nome, Valor)!"
+        "Todos os campos são obrigatórios (CPF, Valor)!"
       );
     }
 
@@ -49,6 +49,7 @@ class DonationService {
         amount,
         donorCPF: cleanedCPF,
         donorName,
+        donorCIM,
       });
 
       /**
@@ -180,100 +181,75 @@ class DonationService {
   }
 
   /**
-   * Busca doação específica pelo seu ID
-   * @param {string} id - O ID da doação a ser buscada
-   * @returns {DonationModel} - Doação se encontrada
-   * @throws {ValidationError} - Se o ID fornecido for vaizo ou inválido
-   * @throws {NotFoundError} - Se nenhuma doação for encontrada
-   * @throws {DatabaseError} - Se ocorrer um erro durando a busca no banco de dados
+   * Busca uma doação ou doações por ID, nome do doador ou ID de transação (TxId).
+   * Tenta buscar por ID, depois por TxId e, por último, por nome do doador.
+   *
+   * @param {string} searchTerm - O termo a ser buscado (pode ser ID, nome do doador ou TxId).
+   * @returns {DonationModel | DonationModel[] | null} - A doação, um array de doações ou null se nada for encontrado.
+   * @throws {ValidationError} - Se o termo de busca for vazio ou inválido.
+   * @throws {DatabaseError} - Se ocorrer um erro durante a busca no banco de dados.
    */
-  static async findById(id) {
-    // Validação do ID
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      throw new ValidationError("O ID é obrigatório!");
-    }
-    // Busca a doação
-    try {
-      const docRef = db.collection("donations").doc(id);
-      const donationSnapshot = await docRef.get();
-
-      if (donationSnapshot.exists) {
-        return new DonationModel({
-          id: donationSnapshot.id,
-          ...donationSnapshot.data(),
-        });
-      } else {
-        throw new NotFoundError("Doação não encontrada.");
-      }
-      // Caso doação não seja encontrada
-    } catch (error) {
-      if (error instanceof ValidationError || error instanceof NotFoundError) {
-        throw error;
-      }
-      throw new DatabaseError(`Erro ao buscar doação por ID: ${id}, ${error}`);
-    }
-  }
-
-  /**
-   * Busca doações através do nome do doador
-   * @param {string} donorName - O nome do doador
-   * @returns {DonationModel[]} - Array das doações que correspondem ao nome do doador
-   * @throws {ValidationError} - Se o nome do doador for vazio ou não for uma string
-   * @throws {DatabaseError} - Se ocorrer um erro durante a buscar no banco de dados
-   */
-  static async findByDonorName(donorName) {
-    // Validação do nome do doador
+  static async searchDonations(searchTerm) {
+    // Validação inicial do termo de busca
     if (
-      !donorName ||
-      typeof donorName !== "string" ||
-      donorName.trim() === ""
+      !searchTerm ||
+      typeof searchTerm !== "string" ||
+      searchTerm.trim() === ""
     ) {
-      throw new ValidationError("O nome do doador é obrigatório");
+      throw new ValidationError("O termo de busca é obrigatório!");
     }
-    try {
-      // Buscar a doação
-      const snapshot = await db
-        .collection("donations")
-        .where("donorName", "==", donorName)
-        .get();
 
-      if (!snapshot.empty) {
-        const donations = snapshot.docs.map(
-          (doc) => new DonationModel({ id: doc.id, ...doc.data() })
-        );
-        return donations;
-      } else {
-        return [];
+    const trimmedSearchTerm = searchTerm.trim();
+
+    try {
+      // Tentar buscar por ID (ID da doação)
+      try {
+        const donationById = await this.findById(trimmedSearchTerm);
+        if (donationById) {
+          return donationById;
+        }
+      } catch (error) {
+        if (
+          !(error instanceof NotFoundError || error instanceof ValidationError)
+        ) {
+          throw error; 
+        }
       }
-    } catch (error) {
-      if (error instanceof ValidationError || error instanceof NotFoundError) {
-        throw error;
+
+      // Tentar buscar por TxId (ID da transação)
+      try {
+        const donationByTxId = await this.findByTxId(trimmedSearchTerm);
+        if (donationByTxId) {
+          return donationByTxId; // Encontrou por TxId, retorna imediatamente
+        }
+      } catch (error) {
+        // Ignorar NotFoundError (findByTxId retorna null) e ValidationError se aplicável
+        if (
+          !(error instanceof NotFoundError || error instanceof ValidationError)
+        ) {
+          throw error;
+        }
       }
-      throw new DatabaseError(
-        `Erro ao buscar doações por nome do doador: ${donorName}, ${error.message}`
+
+      // Tentar buscar por nome do doador
+      const donationsByDonorName = await this.findByDonorName(
+        trimmedSearchTerm
       );
-    }
-  }
-
-  static async findByTxId(txId) {
-    try {
-      const snapshot = await db
-        .collection("donations")
-        .where("txId", "==", txId)
-        .limit(1)
-        .get();
-      if (!snapshot.empty) {
-        const donation = snapshot.docs[0];
-        return new DonationModel({ id: donation.id, ...donation.data() });
+      if (donationsByDonorName.length > 0) {
+        return donationsByDonorName; // Encontrou por nome do doador
       }
+
       return null;
     } catch (error) {
-      throw new DatabaseError(
-        `Erro ao buscar doação por TxId: ${error.message}`
-      );
+      // Captura e relança erros de validação ou de banco de dados das funções internas
+      if (error instanceof ValidationError || error instanceof DatabaseError) {
+        throw error;
+      }
+      // Se for um erro inesperado, re-lança como DatabaseError
+      throw new DatabaseError(`Erro ao busca de doações: ${error.message}`);
     }
   }
-
+  
   static async totalDonation() {
     try {
       const snapshot = await db.collection("donations").count().get();

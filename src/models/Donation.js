@@ -9,6 +9,7 @@ class Donation {
     id,
     donorCPF,
     donorName,
+    //donorCIM,
     amount,
     txId,
     locId,
@@ -20,6 +21,7 @@ class Donation {
     this.id = id;
     this.donorCPF = donorCPF;
     this.donorName = donorName;
+    //this.donorCIM = donorCIM;
     this.amount = parseFloat(amount);
     this.txId = txId;
     this.locId = locId;
@@ -33,6 +35,7 @@ class Donation {
     const dataToSave = {
       donorCPF: this.donorCPF,
       donorName: this.donorName,
+      //donorCIM: this.donorCIM,
       amount: this.amount,
       txId: this.txId,
       locId: this.locId,
