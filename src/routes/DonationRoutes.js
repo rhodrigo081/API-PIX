@@ -16,7 +16,26 @@ const donationServiceInstance = new DonationService();
  * @returns {502} - Erro de serviço externo
  * @returns {500} - Erro interno
  */
-router.post("/", async (req, res, next) => {
+
+router.get("/", async (req, res, next) => {
+  try {
+    const { pageParams } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+
+    const allDonations = await DonationService.allDonations();
+
+    if (result) {
+      return res.status(200).json(result);
+    } else {
+      return res.status(404).json("Nenhuma Doação.");
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/gerar", async (req, res, next) => {
   try {
     const { donorCPF, donorName, amount } = req.body;
 
@@ -46,7 +65,11 @@ router.get("/pesquisar/:searchParam", async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
-    const result = await DonationService.searchDonations(searchParam, page, limit);
+    const result = await DonationService.searchDonations(
+      searchParam,
+      page,
+      limit
+    );
 
     if (result) {
       return res.status(200).json(result);

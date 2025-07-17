@@ -186,7 +186,7 @@ class DonationService {
       const docRef = db.collection("donations");
 
       const countSnapshot = await docRef.count().get();
-      const totalResult = countSnapshot.data().count;
+      const totalResults = countSnapshot.data().count;
 
       if (totalResult === 0) {
         return {
@@ -197,7 +197,28 @@ class DonationService {
           limit: limit,
         };
       }
-    } catch (error) {}
+
+      const snapshot = await docRef.limit(limit).offset(offset).get();
+
+      const donations = snapshot.docs.map(
+        (doc) => new DonationModel({ id: doc.id, ...doc.data() })
+      );
+
+      const totalPages = Math.ceil(totalResult / limit);
+
+      return {
+        donations: donations,
+        currentPage: page,
+        totalPages: totalPages,
+        totalResults: totalResults,
+        limit,
+        limit,
+      };
+    } catch (error) {
+      throw new DatabaseError(
+        `Erro ao buscar todas as doações: ${error.message}`
+      );
+    }
   }
 
   /**
