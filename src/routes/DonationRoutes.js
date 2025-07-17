@@ -19,7 +19,6 @@ const donationServiceInstance = new DonationService();
 
 router.get("/", async (req, res, next) => {
   try {
-    const { pageParams } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
