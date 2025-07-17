@@ -25,8 +25,8 @@ router.get("/", async (req, res, next) => {
 
     const allDonations = await DonationService.allDonations(page, limit);
 
-    if (result) {
-      return res.status(200).json(result);
+    if (allDonations) {
+      return res.status(200).json(allDonations);
     } else {
       return res.status(404).json("Nenhuma Doação.");
     }
