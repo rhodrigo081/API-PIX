@@ -221,7 +221,7 @@ class DonationService {
    * @throws {ValidationError} - Se o nome do doador for vazio ou não for uma string
    * @throws {DatabaseError} - Se ocorrer um erro durante a buscar no banco de dados
    */
-  static async findByDonorName(donorName) {
+  static async findByDonorName(donorName, page = 1, limit = 10) {
     // Validação do nome do doador
     if (
       !donorName ||
@@ -230,21 +230,44 @@ class DonationService {
     ) {
       throw new ValidationError("O nome do doador é obrigatório");
     }
+
+    const trimmedDonorName = donorName.trim();
+    const offset = (Math.max(1, page) - 1) * limit;
     try {
       // Buscar a doação
-      const snapshot = await db
+      const queryRef = await db
         .collection("donations")
         .where("donorName", "==", donorName)
         .get();
 
-      if (!snapshot.empty) {
-        const donations = snapshot.docs.map(
-          (doc) => new DonationModel({ id: doc.id, ...doc.data() })
-        );
-        return donations;
-      } else {
-        return [];
+      const countSnapshot = await queryRef.count().get();
+      const totalResults = countSnapshot.data().count;
+
+      if (totalResults === 0) {
+        return {
+          donations: [],
+          currentPage: page,
+          totalPages: 0,
+          totalResults: 0,
+          limit: limit,
+        };
       }
+
+      const snapshot = await queryRef.limit(limit).offset(offset).get();
+
+      const donations = snapshot.docs.map(
+        (doc) => new DonationModel({ id: doc.id, ...doc.data })
+      );
+
+      const totalPages = Math.ceil(totalResults / limit);
+
+      return {
+        donations: donations,
+        currentPage: page,
+        totalPages: totalPages,
+        totalResults: totalResults,
+        limit: limit,
+      };
     } catch (error) {
       if (error instanceof ValidationError || error instanceof NotFoundError) {
         throw error;
@@ -275,13 +298,15 @@ class DonationService {
   }
 
   /**
-   * Busca uma doação ou doações por ID, nome do doador ou ID de transação (TxId).
-   * Tenta buscar por ID, depois por TxId e, por último, por nome do doador.
+   * Busca uma doação ou doações por ID, nome do doador ou ID de transação (TxId)
+   * Tenta buscar por ID, depois por TxId e, por último, por nome do doador
    *
-   * @param {string} searchTerm - O termo a ser buscado (pode ser ID, nome do doador ou TxId).
-   * @returns {DonationModel | DonationModel[] | null} - A doação, um array de doações ou null se nada for encontrado.
-   * @throws {ValidationError} - Se o termo de busca for vazio ou inválido.
-   * @throws {DatabaseError} - Se ocorrer um erro durante a busca no banco de dados.
+   * @param {string} searchTerm - Termo a ser buscado (pode ser ID, nome do doador ou TxId)
+   * @param {number} [page=1] - Número da página a ser retornada
+   * @param {number} [limit=10] - Número de resultados por página
+   * @returns {DonationModel | DonationModel[] | null} - A doação, um array de doações ou null se nada for encontrado
+   * @throws {ValidationError} - Se o termo de busca for vazio ou inválido
+   * @throws {DatabaseError} - Se ocorrer um erro durante a busca no banco de dados
    */
   static async searchDonations(searchTerm) {
     // Validação inicial do termo de busca
@@ -294,6 +319,7 @@ class DonationService {
     }
 
     const trimmedSearchTerm = searchTerm.trim();
+    const offset = (Math.max(1, page) - 1) * limit;
 
     try {
       // Tentar buscar por ID (ID da doação)
@@ -326,11 +352,19 @@ class DonationService {
       }
 
       // Tentar buscar por nome do doador
-      const donationsByDonorName = await this.findByDonorName(
-        trimmedSearchTerm
-      );
-      if (donationsByDonorName.length > 0) {
-        return donationsByDonorName; // Encontrou por nome do doador
+      try {
+        const donationsByDonorName = await this.findByDonorName(
+          trimmedSearchTerm
+        );
+        if (donationsByDonorName) {
+          return donationsByDonorName;
+        }
+      } catch (error) {
+        if (
+          !(error instanceof NotFoundError || error instanceof ValidationError)
+        ) {
+          throw error;
+        }
       }
 
       return null;
