@@ -179,6 +179,27 @@ class DonationService {
     return donation;
   }
 
+  static async allDonations(page = 1, limit = 10) {
+    const offset = (Math.max(1, page) - 1) * limit;
+
+    try {
+      const docRef = db.collection("donations");
+
+      const countSnapshot = await docRef.count().get();
+      const totalResult = countSnapshot.data().count;
+
+      if (totalResult === 0) {
+        return {
+          donations: [],
+          currentPage: page,
+          totalPages: 0,
+          totalResults: 0,
+          limit: limit,
+        };
+      }
+    } catch (error) {}
+  }
+
   /**
    * Busca doação específica pelo seu ID
    * @param {string} id - O ID da doação a ser buscada
@@ -234,6 +255,47 @@ class DonationService {
   }
 
   /**
+   * Busca doações através do nome do doador
+   * @param {string} donorName - O nome do doador
+   * @returns {DonationModel[]} - Array das doações que correspondem ao nome do doador
+   * @throws {ValidationError} - Se o nome do doador for vazio ou não for uma string
+   * @throws {DatabaseError} - Se ocorrer um erro durante a buscar no banco de dados
+   */
+  static async findByDonorName(donorName) {
+    // Validação do nome do doador
+    if (
+      !donorName ||
+      typeof donorName !== "string" ||
+      donorName.trim() === ""
+    ) {
+      throw new ValidationError("O nome do doador é obrigatório");
+    }
+    try {
+      // Buscar a doação
+      const snapshot = await db
+        .collection("donations")
+        .where("donorName", "==", donorName)
+        .get();
+
+      if (!snapshot.empty) {
+        const donations = snapshot.docs.map(
+          (doc) => new DonationModel({ id: doc.id, ...doc.data() })
+        );
+        return donations;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      if (error instanceof ValidationError || error instanceof NotFoundError) {
+        throw error;
+      }
+      throw new DatabaseError(
+        `Erro ao buscar doações por nome do doador: ${donorName}, ${error.message}`
+      );
+    }
+  }
+
+  /**
    * Busca uma doação ou doações por ID, nome do doador ou ID de transação (TxId)
    * Tenta buscar por ID, depois por TxId e, por último, por nome do doador
    *
@@ -260,28 +322,27 @@ class DonationService {
       let foundDonations = [];
       let totalFound = 0;
 
-      // 1. Tentar buscar por ID (ID da doação)
+      // Tenta buscar por ID
       try {
         const donationById = await this.findById(trimmedSearchTerm);
         if (donationById) {
-          foundDonations = [donationById]; // Coloca em um array para padronizar o retorno
+          foundDonations = [donationById];
           totalFound = 1;
         }
       } catch (error) {
         if (
           !(error instanceof NotFoundError || error instanceof ValidationError)
         ) {
-          console.warn(`Erro ao tentar buscar por ID: ${error.message}`);
           throw error;
         }
       }
 
-      // 2. Se não encontrou por ID, tentar buscar por TxId
+      // Tenta buscar por TxId
       if (foundDonations.length === 0) {
         try {
           const donationByTxId = await this.findByTxId(trimmedSearchTerm);
           if (donationByTxId) {
-            foundDonations = [donationByTxId]; // Coloca em um array
+            foundDonations = [donationByTxId];
             totalFound = 1;
           }
         } catch (error) {
@@ -290,28 +351,35 @@ class DonationService {
               error instanceof NotFoundError || error instanceof ValidationError
             )
           ) {
-            console.warn(`Erro ao tentar buscar por TxId: ${error.message}`);
             throw error;
           }
         }
       }
 
-      // 3. Se ainda não encontrou, tentar buscar por nome do doador
+      // Tenta buscar por nome do doador
       if (foundDonations.length === 0) {
-        // Aqui, o findByDonorName NÃO deve ter paginação. Ele traz todos os matches.
-        // A paginação será aplicada *aqui*.
-        const queryRef = db
-          .collection("donations")
-          .where("donorName", "==", trimmedSearchTerm);
-
-        const countSnapshot = await queryRef.count().get();
-        totalFound = countSnapshot.data().count;
-
-        if (totalFound > 0) {
-          const snapshot = await queryRef.limit(limit).offset(offset).get();
-          foundDonations = snapshot.docs.map(
-            (doc) => new DonationModel({ id: doc.id, ...doc.data() })
+        try {
+          const donationByDonorName = await this.findByDonorName(
+            trimmedSearchTerm
           );
+          if (donationByDonorName) {
+            foundDonations = [donationByDonorName];
+            totalFound = foundDonations.length;
+            if (donationByDonorName.length > 0) {
+              foundDonations = donationByDonorName.slice(
+                offset,
+                offset + limit
+              );
+            }
+          }
+        } catch (error) {
+          if (
+            !(
+              error instanceof NotFoundError || error instanceof ValidationError
+            )
+          ) {
+            throw error;
+          }
         }
       }
 
@@ -323,7 +391,6 @@ class DonationService {
         currentPage: page,
         totalPages: totalPages,
         totalResults: totalFound,
-        limit: limit,
       };
     } catch (error) {
       if (error instanceof ValidationError || error instanceof DatabaseError) {
