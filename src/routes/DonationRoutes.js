@@ -43,7 +43,10 @@ router.get("/pesquisar/:searchParam", async (req, res, next) => {
   try {
     const { searchParam } = req.params;
 
-    const result = await DonationService.searchDonations(searchParam);
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+
+    const result = await DonationService.searchDonations(searchParam, page, limit);
 
     if (result) {
       return res.status(200).json(result);

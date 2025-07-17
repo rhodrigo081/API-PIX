@@ -214,47 +214,6 @@ class DonationService {
     }
   }
 
-  /**
-   * Busca doações através do nome do doador
-   * @param {string} donorName - O nome do doador
-   * @returns {DonationModel[]} - Array das doações que correspondem ao nome do doador
-   * @throws {ValidationError} - Se o nome do doador for vazio ou não for uma string
-   * @throws {DatabaseError} - Se ocorrer um erro durante a buscar no banco de dados
-   */
-  static async findByDonorName(donorName) {
-    // Validação do nome do doador
-    if (
-      !donorName ||
-      typeof donorName !== "string" ||
-      donorName.trim() === ""
-    ) {
-      throw new ValidationError("O nome do doador é obrigatório");
-    }
-    try {
-      // Buscar a doação
-      const snapshot = await db
-        .collection("donations")
-        .where("donorName", "==", donorName)
-        .get();
-
-      if (!snapshot.empty) {
-        const donations = snapshot.docs.map(
-          (doc) => new DonationModel({ id: doc.id, ...doc.data() })
-        );
-        return donations;
-      } else {
-        return [];
-      }
-    } catch (error) {
-      if (error instanceof ValidationError || error instanceof NotFoundError) {
-        throw error;
-      }
-      throw new DatabaseError(
-        `Erro ao buscar doações por nome do doador: ${donorName}, ${error.message}`
-      );
-    }
-  }
-
   static async findByTxId(txId) {
     try {
       const snapshot = await db
