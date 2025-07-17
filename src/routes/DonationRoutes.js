@@ -23,7 +23,7 @@ router.get("/", async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
 
-    const allDonations = await DonationService.allDonations();
+    const allDonations = await DonationService.allDonations(page, limit);
 
     if (result) {
       return res.status(200).json(result);

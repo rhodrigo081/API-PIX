@@ -188,7 +188,7 @@ class DonationService {
       const countSnapshot = await docRef.count().get();
       const totalResults = countSnapshot.data().count;
 
-      if (totalResult === 0) {
+      if (totalResults === 0) {
         return {
           donations: [],
           currentPage: page,
@@ -204,15 +204,14 @@ class DonationService {
         (doc) => new DonationModel({ id: doc.id, ...doc.data() })
       );
 
-      const totalPages = Math.ceil(totalResult / limit);
+      const totalPages = Math.ceil(totalResults / limit);
 
       return {
         donations: donations,
         currentPage: page,
         totalPages: totalPages,
         totalResults: totalResults,
-        limit,
-        limit,
+        limit: limit,
       };
     } catch (error) {
       throw new DatabaseError(
