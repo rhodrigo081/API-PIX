@@ -33,7 +33,7 @@ export class PartnerService {
     }
 
     try {
-      const existingPartner = await this.findByCPF(cleanedCPF);
+      const existingPartner = await PartnerModel.findByCPF(cleanedCPF);
       if (existingPartner) {
         throw new ValidationError("Um parceiro com este CPF já existe!");
       }
