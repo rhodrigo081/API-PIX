@@ -1,23 +1,21 @@
 import admin from "firebase-admin";
 import logger from "../utils/Logger.js";
 
-// Caminho do arquivo de credenciais do Banco de dados
-const serviceAccountPath = process.env.FIREBASE_ACCOUNT_JSON;
+const serviceAccountJsonString = process.env.FIREBASE_ACCOUNT_JSON;
 
-// Verifica se o arquivo está definido
-if (!serviceAccountPath) {
-  logger.fatal("Não foi possível carregar o banco de dados..");
+// Verifica se o conteúdo JSON está definido
+if (!serviceAccountJsonString) {
+  logger.fatal("Erro: A variável de ambiente FIREBASE_ACCOUNT_JSON não está definida ou está vazia. Não foi possível carregar o banco de dados.");
 }
 
 // Armazena as credenciais
 let serviceAccount;
 
-// Tratamento da inicilização do banco de dados
+// Tratamento da inicialização do banco de dados
 try {
-  // Contrução de caminho absoluto e carrega o arquivo em JSON
-  serviceAccount = JSON.parse(serviceAccountPath);
+  serviceAccount = JSON.parse(serviceAccountJsonString);
 
-  // Inicialização o  banco de dados
+  // Inicializa o banco de dados
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -27,7 +25,9 @@ try {
     logger.info("Banco de dados já está em execução!");
   }
 } catch (error) {
-  logger.fatal("Falha ao inicializar Banco de dados.");
+  logger.fatal(`Falha ao inicializar Banco de dados. Verifique se o JSON na variável de ambiente está formatado corretamente: ${error.message}`);
+  // Saia do processo para indicar que a inicialização falhou criticamente
+  process.exit(1);
 }
 
 export default admin;
