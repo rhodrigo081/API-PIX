@@ -7,6 +7,7 @@ export default class Donation {
     id,
     donorCPF,
     donorName,
+    donorCIM,
     amount,
     txId,
     locId,
@@ -18,6 +19,7 @@ export default class Donation {
     this.id = id;
     this.donorCPF = donorCPF;
     this.donorName = donorName;
+    this.donorCIM = donorCIM;
     this.amount = parseFloat(amount);
     this.txId = txId;
     this.locId = locId;
@@ -31,6 +33,7 @@ export default class Donation {
     const dataToSave = {
       donorCPF: this.donorCPF,
       donorName: this.donorName,
+      donorCIM: this.donorCIM,
       amount: this.amount,
       txId: this.txId,
       locId: this.locId,
