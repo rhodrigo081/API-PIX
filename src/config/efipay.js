@@ -1,4 +1,4 @@
-import Gerencianet from "gn-api-sdk-node";
+const Gerencianet = require("gn-api-sdk-node");
 import fs from "fs";
 import path from "path";
 
@@ -27,11 +27,9 @@ try {
 
 // Credenciais da conta bancária
 const efiOptions = {
-  // Converte a string "true"/"false" para booleano
   sandbox: process.env.GN_SANDBOX === "true",
   client_id: process.env.GN_CLIENT_ID,
   client_secret: process.env.GN_CLIENT_SECRET,
-  // AGORA, passe o caminho do arquivo temporário
   certificate: certPath,
   certificate_pass: process.env.GN_CERTIFICATE_PASSWORD || "",
 };
