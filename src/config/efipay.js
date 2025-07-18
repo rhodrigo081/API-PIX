@@ -1,6 +1,6 @@
 const Gerencianet = require("gn-api-sdk-node");
-import fs from "fs";
-import path from "path";
+const fs = require("fs");
+const path = require("path");
 
 // Arquivo temporário
 const tempDir = "/tmp";
