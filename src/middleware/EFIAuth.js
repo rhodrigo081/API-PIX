@@ -1,5 +1,6 @@
-const axios = require("axios");
-const { ExternalError, ValidationError } = require("../utils/Errors");
+import axios from "axios";
+import Errors from "../utils/Errors";
+const { ExternalError, ValidationError } = Errors;
 
 const clientId = process.env.GN_CLIENT_ID;
 const clientSecret = process.env.GN_CLIENT_SECRET;
