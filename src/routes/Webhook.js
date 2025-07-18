@@ -1,7 +1,7 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const DonationService = require("../service/DonationService");
-const { ExternalError } = require("../utils/Errors");
+import DonationService from "../service/DonationService.js";
+import { ExternalError } from "../utils/Errors.js";
 const donationServiceInstance = new DonationService();
 /**
  * Rota POST /api/webhook
