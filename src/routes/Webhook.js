@@ -1,8 +1,7 @@
 import express from "express";
 const router = express.Router();
 import DonationService from "../service/DonationService.js";
-import Errors from "../utils/Errors.js";
-const { ExternalError } = Errors;
+import { ExternalError } from "../utils/Errors.js";
 const donationServiceInstance = new DonationService();
 /**
  * Rota POST /api/webhook

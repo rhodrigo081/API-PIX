@@ -1,4 +1,4 @@
-class NotFoundError extends Error {
+export class NotFoundError extends Error {
   constructor(message) {
     super(message);
     this.name = "NotFoundError";
@@ -6,7 +6,7 @@ class NotFoundError extends Error {
   }
 }
 
-class ValidationError extends Error {
+export class ValidationError extends Error {
   constructor(message) {
     super(message);
     this.name = "ValidationError";
@@ -14,7 +14,7 @@ class ValidationError extends Error {
   }
 }
 
-class DatabaseError extends Error {
+export class DatabaseError extends Error {
   constructor(message, originalError) {
     super(message);
     this.name = "DatabaseError";
@@ -23,7 +23,7 @@ class DatabaseError extends Error {
   }
 }
 
-class ExternalError extends Error {
+export class ExternalError extends Error {
   constructor(message, originalError) {
     super(message);
     this.name = "ExternalError";
@@ -32,10 +32,3 @@ class ExternalError extends Error {
   }
 }
 
-const Errors = {
-  NotFoundError,
-  ValidationError,
-  DatabaseError,
-  ExternalError,
-};
-export default Errors;

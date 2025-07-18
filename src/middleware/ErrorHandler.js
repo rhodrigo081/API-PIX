@@ -1,5 +1,4 @@
-import Errors from "../utils/Errors.js";
-const { NotFoundError, ValidationError, DatabaseError, ExternalError } = Errors;
+import { NotFoundError, ValidationError, DatabaseError, ExternalError } from "../utils/Errors.js";
 
 const errorHandler = (err, req, res, next) => {
   if (err instanceof NotFoundError) {

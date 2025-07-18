@@ -1,4 +1,4 @@
-const logger = {
+export const logger = {
     info:(message) => {
         console.error(`INFO: ${message}`);
     },
@@ -22,5 +22,3 @@ const logger = {
         process.exit(1);
     }
 }
-
-export default logger;

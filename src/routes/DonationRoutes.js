@@ -1,9 +1,9 @@
 import express from "express";
 const router = express.Router();
-import Errors from "../utils/Errors.js";
-const { ValidationError } = Errors;
+import { ValidationError } from "../utils/Errors.js";
 import DonationService from "../service/DonationService.js";
 const donationServiceInstance = new DonationService();
+import { authenticateToken } from "../middleware/auth.js"
 
 /**
  * Rota POST /api/doacoes
