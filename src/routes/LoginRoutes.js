@@ -2,7 +2,7 @@ import express from "express";
 import { generateToken, authenticateToken } from "../middleware/auth.js";
 import bcrypt from "bcrypt";
 
-const router = express.Router();
+const router = express.router();
 
 // Login com token via cookie
 router.post("/login", async (req, res) => {
