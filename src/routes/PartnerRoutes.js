@@ -1,6 +1,6 @@
 import express from "express";
-import authenticateToken from "../middleware/auth";
-import { PartnerService } from "./../service/PartnerService";
+import authenticateToken from "../middleware/auth.js";
+import { PartnerService } from "./../service/PartnerService.js";
 const router = express.Router();
 const partnerServiceInstance = new PartnerService();
 
