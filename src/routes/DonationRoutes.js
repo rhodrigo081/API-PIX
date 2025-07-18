@@ -18,7 +18,7 @@ const donationServiceInstance = new DonationService();
  * @returns {500} - Erro interno
  */
 
-router.get("/", async (req, res, next) => {
+router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
@@ -58,7 +58,7 @@ router.post("/gerar", async (req, res, next) => {
   }
 });
 
-router.get("/pesquisar/:searchParam", async (req, res, next) => {
+router.get("/pesquisar/:searchParam", authenticateToken, async (req, res, next) => {
   try {
     const { searchParam } = req.params;
 
@@ -81,7 +81,7 @@ router.get("/pesquisar/:searchParam", async (req, res, next) => {
   }
 });
 
-router.get("/contagem", async (req, res, next) => {
+router.get("/contagem", authenticateToken, async (req, res, next) => {
   try {
     const donationsCount = await DonationService.totalDonation();
     res.status(200).json(`Total de Doações: ${donationsCount}`);
@@ -90,7 +90,7 @@ router.get("/contagem", async (req, res, next) => {
   }
 });
 
-router.get("/contagem/mes", async (req, res, next) => {
+router.get("/contagem/mes", authenticateToken, async (req, res, next) => {
   try {
     const { month, year } = req.query;
 
@@ -120,7 +120,7 @@ router.get("/contagem/mes", async (req, res, next) => {
   }
 });
 
-router.get("/contagem/ano", async (req, res, next) => {
+router.get("/contagem/ano", authenticateToken, async (req, res, next) => {
   try {
     const { year } = req.query;
 
@@ -145,7 +145,7 @@ router.get("/contagem/ano", async (req, res, next) => {
   }
 });
 
-router.get("/evolucao", async (req, res, next) => {
+router.get("/evolucao", authenticateToken, async (req, res, next) => {
   try {
     const evolutionData = await DonationService.donationEvolution();
     res.status(200).json(evolutionData);
