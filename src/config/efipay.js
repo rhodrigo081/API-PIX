@@ -1,4 +1,4 @@
-const Gerencianet = require("gn-api-sdk-node");
+import Gerencianet from "gn-api-sdk-node";
 const fs = require("fs");
 const path = require("path");
 
