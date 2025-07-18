@@ -1,8 +1,9 @@
 import admin from "../config/db.js";
 const db = admin.firestore();
-import {
+import Errors from "../utils/Errors.js";
+const {
   DatabaseError,
-} from ("../utils/Errors");
+} = Errors;
 
 class Donation {
   constructor({

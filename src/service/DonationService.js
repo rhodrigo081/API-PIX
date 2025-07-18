@@ -1,14 +1,10 @@
-const admin = require("../config/db");
+import admin from "../config/db.js";
 const db = admin.firestore();
-const { Timestamp } = require("firebase-admin/firestore");
-const {
-  ValidationError,
-  DatabaseError,
-  ExternalError,
-  NotFoundError,
-} = require("../utils/Errors");
-const DonationModel = require("../models/Donation");
-const pixService = require("./PixService");
+import { Timestamp } from "firebase-admin/firestore";
+import Errors from "../utils/Errors.js";
+const { ValidationError, DatabaseError, ExternalError, NotFoundError } = Errors;
+import DonationModel from "../models/Donation.js";
+import pixService from "./PixService.js";
 
 // Gerenciamento das operações de doações
 class DonationService {
