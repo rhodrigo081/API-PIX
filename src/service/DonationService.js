@@ -22,7 +22,7 @@ class DonationService {
    * @throws {ValidationError} - Se os dados de entrada forem inválidos ou incompletos
    * @throws {ExternalError} - Se houver falha na comunicação com o serviço Pix
    */
-  async createDonation(data) {
+  static async createDonation(data) {
     const { donorCPF, donorName, amount } = data;
 
     // Validação dos campos obrigatórios

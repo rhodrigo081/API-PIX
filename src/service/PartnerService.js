@@ -6,7 +6,7 @@ import {
   NotFoundError,
 } from "../utils/Errors.js";
 import PartnerModel from "../models/Partner.js";
-import { PartnerService } from './PartnerService';
+
 
 export class PartnerService {
   /**
@@ -21,7 +21,7 @@ export class PartnerService {
    * @throws {ValidationError} Se algum campo obrigatório estiver faltando, o CPF for inválido ou já existir.
    * @throws {DatabaseError} Se ocorrer um erro relacionado ao banco de dados durante a criação.
    */
-  async createPartner(data) {
+  static async createPartner(data) {
     const { cpf, name, cim, degree, profession } = data;
 
     if (!cpf || !name || !cim || !degree || !profession) {
@@ -34,7 +34,7 @@ export class PartnerService {
     }
 
     try {
-      const existingPartner = await PartnerService.findByCPF(cleanedCPF);
+      const existingPartner = await this.findByCPF(cleanedCPF);
       if (existingPartner) {
         throw new ValidationError("Um parceiro com este CPF já existe!");
       }

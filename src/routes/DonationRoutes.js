@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 import { ValidationError } from "../utils/Errors.js";
 import DonationService from "../service/DonationService.js";
-const donationServiceInstance = new DonationService();
 import { authenticateToken } from "../middleware/auth.js"
 
 /**
@@ -40,7 +39,7 @@ router.post("/gerar", async (req, res, next) => {
     const { donorCPF, donorName, amount } = req.body;
 
     // Chama o serviço para criação da doação e cobrança pix
-    const pixDetails = await donationServiceInstance.createDonation({
+    const pixDetails = await DonationService.createDonation({
       donorCPF,
       donorName,
       amount,

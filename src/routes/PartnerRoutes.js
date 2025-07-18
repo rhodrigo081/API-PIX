@@ -2,7 +2,6 @@ import express from "express";
 import { authenticateToken } from "../middleware/auth.js";
 import { PartnerService } from "../service/PartnerService.js";
 const router = express.Router();
-const partnerServiceInstance = new PartnerService();
 
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
@@ -25,7 +24,7 @@ router.post("/cadastrar", authenticateToken, async (req, res, next) => {
   try {
     const { cpf, name, cim, degree, profession } = req.body;
 
-    const partnerDetails = await partnerServiceInstance.createPartner({
+    const partnerDetails = await PartnerService.createPartner({
       cpf,
       name,
       cim,
