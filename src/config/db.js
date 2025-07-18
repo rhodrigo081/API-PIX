@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import logger from "../utils/Logger.js";
+import { logger } from "../utils/Logger.js";
 
 const serviceAccountJsonString = process.env.FIREBASE_ACCOUNT_JSON;
 

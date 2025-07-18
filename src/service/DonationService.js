@@ -1,8 +1,12 @@
 import admin from "../config/db.js";
 const db = admin.firestore();
 import { Timestamp } from "firebase-admin/firestore";
-import Errors from "../utils/Errors.js";
-const { ValidationError, DatabaseError, ExternalError, NotFoundError } = Errors;
+import {
+  ValidationError,
+  DatabaseError,
+  ExternalError,
+  NotFoundError,
+} from "../utils/Errors.js";
 import DonationModel from "../models/Donation.js";
 import pixService from "./PixService.js";
 

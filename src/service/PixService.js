@@ -1,7 +1,6 @@
 import efi from "../config/efipay.js";
 import { v4 as uuidv4 } from "uuid";
-import Errors from "../utils/Errors.js";
-const { ExternalError } = Errors;
+import { ExternalError } from "../utils/Errors.js";
 
 // Desabilita a validação MTLS(Apenas em ambiente de desenvolvimento)
 efi["validateMtls"] = false;
