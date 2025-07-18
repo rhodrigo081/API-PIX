@@ -2,7 +2,7 @@ import admin from "../config/db.js";
 const db = admin.firestore();
 import { DatabaseError } from "../utils/Errors.js";
 
-export class Donation {
+export default class Donation {
   constructor({
     id,
     donorCPF,

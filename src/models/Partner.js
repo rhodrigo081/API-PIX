@@ -2,7 +2,7 @@ import admin from "../config/db.js";
 const db = admin.firestore();
 import { DatabaseError } from "../utils/Errors.js";
 
-export class Partner {
+export default class Partner {
   constructor({ id, cpf, name, cim, degree, profession }) {
     this.id = id;
     this.cpf = cpf;
