@@ -78,4 +78,4 @@ routes.post("/logout", (req, res) => {
   return res.status(200).json({ message: "Logout realizado com sucesso" });
 });
 
-export default routes;
+export default router;

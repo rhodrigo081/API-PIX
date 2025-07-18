@@ -2,7 +2,7 @@ import admin from "../config/db.js";
 const db = admin.firestore();
 import { DatabaseError } from "../utils/Errors.js";
 
-class Donation {
+export class Donation {
   constructor({
     id,
     donorCPF,
@@ -55,5 +55,3 @@ class Donation {
     }
   }
 }
-
-export default Donation;

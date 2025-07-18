@@ -28,7 +28,7 @@ class DonationService {
     // Validação dos campos obrigatórios
     if (!donorCPF || !donorName || !amount) {
       throw new ValidationError(
-        "Todos os campos são obrigatórios (CPF, Nome, Valor)!"
+        "Todos os campos são obrigatórios!"
       );
     }
 
