@@ -20,7 +20,7 @@ export class PartnerService {
    * @throws {ValidationError} Se algum campo obrigatório estiver faltando, o CPF for inválido ou já existir.
    * @throws {DatabaseError} Se ocorrer um erro relacionado ao banco de dados durante a criação.
    */
-  static async createPartner(data) {
+  async createPartner(data) {
     const { cpf, name, cim, degree, profession } = data;
 
     if (!cpf || !name || !cim || !degree || !profession) {
@@ -125,7 +125,7 @@ export class PartnerService {
           ...partnerSnapshot.data(),
         });
       } else {
-        throw new NotFoundError("Parceiro não encontrado."); 
+        throw new NotFoundError("Parceiro não encontrado.");
       }
     } catch (error) {
       if (error instanceof ValidationError || error instanceof NotFoundError) {
