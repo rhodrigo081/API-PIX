@@ -112,4 +112,4 @@ class PixService {
   }
 }
 
-module.exports = new PixService();
+export default new PixService();

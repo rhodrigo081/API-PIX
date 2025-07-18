@@ -549,4 +549,4 @@ class DonationService {
   }
 }
 
-module.exports = DonationService;
+export default DonationService;

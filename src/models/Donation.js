@@ -1,15 +1,14 @@
-const admin = require("../config/db");
+import admin from "../config/db.js";
 const db = admin.firestore();
-const {
+import {
   DatabaseError,
-} = require("../utils/Errors");
+} from ("../utils/Errors");
 
 class Donation {
   constructor({
     id,
     donorCPF,
     donorName,
-    //donorCIM,
     amount,
     txId,
     locId,
@@ -21,7 +20,6 @@ class Donation {
     this.id = id;
     this.donorCPF = donorCPF;
     this.donorName = donorName;
-    //this.donorCIM = donorCIM;
     this.amount = parseFloat(amount);
     this.txId = txId;
     this.locId = locId;
@@ -35,7 +33,6 @@ class Donation {
     const dataToSave = {
       donorCPF: this.donorCPF,
       donorName: this.donorName,
-      //donorCIM: this.donorCIM,
       amount: this.amount,
       txId: this.txId,
       locId: this.locId,
@@ -61,4 +58,4 @@ class Donation {
   }
 }
 
-module.exports = Donation;
+export default Donation;

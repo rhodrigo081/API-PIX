@@ -1,5 +1,5 @@
-const app = require("./src/app"); 
-const { webhookConfig } = require("./src/middleware/EFIAuth"); 
+import app from "./src/app.js"; 
+import webhookConfig from "./src/middleware/EFIAuth.js"; 
 
 app.listen(async () => {
   try {

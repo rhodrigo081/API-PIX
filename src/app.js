@@ -1,41 +1,47 @@
-const express = require("express");
-const cors = require("cors");
-const errorHandler = require("./middleware/ErrorHandler");
+import express from "express";
+import cors from "cors"
+import errorHandler from "./middleware/ErrorHandler.js";
 
-require("./config/db");
-require("./config/efipay");
+import "./config/db.js";
+import "./config/efipay.js";
 
-const donationRoutes = require("./routes/DonationRoutes");
-const webhook = require("./routes/Webhook");
+import login from "./routes/LoginRoutes.js";
+import donationRoutes from "./routes/DonationRoutes.js"
+import webhook from "./routes/Webhook.js"
+import cookieParser from 'cookie-parser';
 
 const app = express();
+app.use(cors())
+app.use(cookieParser());
 
-app.use(cors());
+const rawBodySaver = (req, res, buf, encoding) => {
+  if (buf && buf.length && req.originalUrl.startsWith("/api/webhook/pix")) {
+    req.rawBody = buf.toString(encoding || "utf8");
+  }
+};
+
 app.use(
   express.json({
-    verify: (req, res, buf) => {
-      if (req.originalUrl.startsWith("/api/webhook/pix")) {
-        req.rawBody = buf;
-      }
-    },
+    verify: rawBodySaver,
   })
 );
 
 app.use(
   express.urlencoded({
     extended: true,
-    verify: (req, res, buf) => {
-      if (req.originalUrl.startsWith("/api/webhook/pix")) {
-        req.rawBody = buf;
-      }
-    },
+    verify: rawBodySaver,
   })
 );
 
 app.use(errorHandler);
-app.use("/api/doacoes", donationRoutes);
-app.use("/api/webhook", webhook);
+app.use("/", login);
+app.use("/doacoes", donationRoutes);
+app.use("/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
+
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() })
+})
 
 app.get("/", (req, res) => {
   res.json({ message: "API está online!" });
@@ -52,4 +58,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+app.use((req, res, next) => {
+  res.header("X-Content-Type-Options", "nosniff")
+  res.header("X-Frame-Options", "DENY")
+  res.header("X-XSS-Protection", "1; mode=block")
+  next()
+})
+
+export default app;

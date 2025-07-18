@@ -1,8 +1,6 @@
-const Gerencianet = require("gn-api-sdk-node");
-const fs = require("fs"); // Importe o módulo fs
-const path = require("path"); // Importe o módulo path
-
-// --- PASSO 1: DEFINIR O CAMINHO TEMPORÁRIO E ESCREVER O CERTIFICADO ---
+import Gerencianet from "gn-api-sdk-node";
+import fs from "fs"; // Importe o módulo fs
+import path from "path"; // Importe o módulo path
 
 // Define o diretório temporário no Vercel. Este é o único local gravável.
 const tempDir = "/tmp"; 
@@ -26,7 +24,6 @@ try {
   throw new Error("Falha crítica ao carregar o certificado PIX.");
 }
 
-// --- PASSO 2: INICIALIZAR A GERENCIANET COM O CAMINHO DO ARQUIVO ---
 
 // Credenciais da conta bancária
 const efiOptions = {

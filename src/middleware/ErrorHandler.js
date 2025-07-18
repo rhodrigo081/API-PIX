@@ -1,9 +1,5 @@
-const {
-  NotFoundError,
-  ValidationError,
-  DatabaseError,
-  ExternalError,
-} = require("../utils/Errors");
+import Errors from "../utils/Errors.js";
+const { NotFoundError, ValidationError, DatabaseError, ExternalError } = Errors;
 
 const errorHandler = (err, req, res, next) => {
   if (err instanceof NotFoundError) {
@@ -27,7 +23,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  if(err instanceof ExternalError){
+  if (err instanceof ExternalError) {
     return res.status(err.statusCode).json({
       message: err.message,
       code: err.name,
@@ -41,4 +37,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = errorHandler;
+export default errorHandler;

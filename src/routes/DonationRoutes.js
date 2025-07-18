@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
 const router = express.Router();
-const { ValidationError, NotFoundError } = require("../utils/Errors");
-const DonationService = require("../service/DonationService");
+import Errors from "../utils/Errors.js";
+const { ValidationError } = Errors;
+import DonationService from "../service/DonationService.js";
 const donationServiceInstance = new DonationService();
 
 /**
@@ -152,5 +153,4 @@ router.get("/evolucao", async (req, res, next) => {
     next(error);
   }
 });
-
-module.exports = router;
+export default router;

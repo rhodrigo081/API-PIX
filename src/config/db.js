@@ -1,9 +1,8 @@
-const admin = require("firebase-admin");
-const path = require("path");
-const logger = require("../utils/Logger");
+import admin from "firebase-admin";
+import logger from "../utils/Logger.js";
 
 // Caminho do arquivo de credenciais do Banco de dados
-const serviceAccountPath = process.env.FIREBASE_ACCOUNT_JSON;
+const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
 
 // Verifica se o arquivo está definido
 if (!serviceAccountPath) {
@@ -31,4 +30,4 @@ try {
   logger.fatal("Falha ao inicializar Banco de dados.");
 }
 
-module.exports = admin;
+export default admin;

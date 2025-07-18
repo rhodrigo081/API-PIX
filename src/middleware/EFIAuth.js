@@ -84,4 +84,4 @@ async function webhookConfig() {
   }
 }
 
-module.exports = { webhookConfig };
+export default webhookConfig;
