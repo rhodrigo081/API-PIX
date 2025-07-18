@@ -14,7 +14,6 @@ export default class Partner {
 
   async save() {
     const dataToSave = {
-      id: this.id,
       cpf: this.cpf,
       name: this.name,
       cim: this.cim,
@@ -29,7 +28,7 @@ export default class Partner {
         docRef = db.collection("partners").doc(this.id);
         await docRef.set(dataToSave, { merge: true });
       } else {
-        docRef = await db.collection("partner").add(dataToSave);
+        docRef = await db.collection("partners").add(dataToSave);
         this.id = docRef.id;
       }
       return { id: this.id, ...dataToSave };

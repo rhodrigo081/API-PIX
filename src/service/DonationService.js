@@ -179,6 +179,13 @@ class DonationService {
     return donation;
   }
 
+    /**
+   * Recupera todas as doações com paginação.
+   * @param {number} [page=1] - O número da página atual.
+   * @param {number} [limit=10] - O número de parceiros por página.
+   * @returns {Promise<{donations: DonationModel[], currentPage: number, totalPages: number, totalResults: number, limit: number}>} Lista paginada de doações
+   * @throws {DatabaseError} Se ocorrer um erro relacionado ao banco de dados durante a recuperação.
+   */
   static async allDonations(page = 1, limit = 10) {
     const offset = (Math.max(1, page) - 1) * limit;
 

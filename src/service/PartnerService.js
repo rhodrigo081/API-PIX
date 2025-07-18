@@ -6,6 +6,7 @@ import {
   NotFoundError,
 } from "../utils/Errors.js";
 import PartnerModel from "../models/Partner.js";
+import { PartnerService } from './PartnerService';
 
 export class PartnerService {
   /**
