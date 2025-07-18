@@ -1,6 +1,6 @@
-import Gerencianet from "./gn-api-sdk-node-wrapper.cjs";
-import fs from "fs";
-import path from "path";
+const Gerencianet = require("./gn-api-sdk-node-wrapper.cjs");
+const fs = require("fs");
+const path = require("path");
 
 // Define diretório temporário
 const tempDir = "/tmp";
@@ -17,6 +17,7 @@ try {
   const buffer = Buffer.from(process.env.GN_CERTIFICATE_PATH, "base64");
   fs.writeFileSync(certPath, buffer);
 } catch (error) {
+
   throw new Error("Falha crítica ao carregar o certificado PIX.");
 }
 
