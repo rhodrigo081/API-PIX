@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import logger from "../utils/Logger.js";
 
 // Caminho do arquivo de credenciais do Banco de dados
-const serviceAccountPath = process.env.FIREBASE_ACCOUNT_PATH;
+const serviceAccountPath = process.env.FIREBASE_ACCOUNT_JSON;
 
 // Verifica se o arquivo está definido
 if (!serviceAccountPath) {
