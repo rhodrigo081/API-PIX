@@ -1,5 +1,5 @@
 import axios from "axios";
-import Errors from "../utils/Errors";
+import Errors from "../utils/Errors.js";
 const { ExternalError, ValidationError } = Errors;
 
 const clientId = process.env.GN_CLIENT_ID;
