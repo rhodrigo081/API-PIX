@@ -2,10 +2,10 @@ import express from "express";
 import { generateToken, authenticateToken } from "../middleware/auth.js";
 import bcrypt from "bcrypt";
 
-const routes = express.Router();
+const router = express.Router();
 
 // Login com token via cookie
-routes.post("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { login, password } = req.body;
 
@@ -53,7 +53,7 @@ routes.post("/login", async (req, res) => {
 });
 
 // Rota protegida
-routes.get("/profile", authenticateToken, (req, res) => {
+router.get("/profile", authenticateToken, (req, res) => {
   res.json({
     message: "Perfil do usuário",
     user: req.user,
@@ -61,7 +61,7 @@ routes.get("/profile", authenticateToken, (req, res) => {
 });
 
 // Verificação de token (via cookie)
-routes.get("/verify-token", authenticateToken, (req, res) => {
+router.get("/verify-token", authenticateToken, (req, res) => {
   res.json({
     valid: true,
     user: req.user,
@@ -69,7 +69,7 @@ routes.get("/verify-token", authenticateToken, (req, res) => {
 });
 
 // Logout - remove o cookie
-routes.post("/logout", (req, res) => {
+router.post("/logout", (req, res) => {
   res.clearCookie("accessToken", {
     httpOnly: true,
     sameSite: "strict",
