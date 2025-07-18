@@ -1,27 +1,22 @@
 const Gerencianet = require("gn-api-sdk-node");
-const fs = require("fs");
+const fs = require("fs"); 
 const path = require("path");
 
 // Arquivo temporário
-const tempDir = "/tmp";
-const certFileName = "homologacao-791074-Pix.p12";
+const tempDir = "/tmp"; 
+const certFileName = "homologacao-791074-Pix.p12"; 
 const certPath = path.join(tempDir, certFileName);
 
 // Verifica se a variável de ambiente do certificado está definida
 if (!process.env.GN_CERTIFICATE_PATH) {
-  throw new Error("GN_CERTIFICATE_PATH não configurado.");
+  throw new Error("Certificado não configurado.");
 }
 
 // Tenta decodificar o Base64 e escrever o arquivo do certificado no /tmp
 try {
   const buffer = Buffer.from(process.env.GN_CERTIFICATE_PATH, "base64");
   fs.writeFileSync(certPath, buffer);
-  console.log(`Certificado PIX gravado com sucesso em: ${certPath}`);
 } catch (error) {
-  console.error(
-    `ERRO: Falha ao gravar o certificado PIX em ${certPath}. Detalhes:`,
-    error.message
-  );
   throw new Error("Falha crítica ao carregar o certificado PIX.");
 }
 
@@ -35,4 +30,4 @@ const efiOptions = {
 };
 
 const efi = new Gerencianet(efiOptions);
-export default efi;
+module.exports = efi;
