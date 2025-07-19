@@ -32,6 +32,9 @@ router.post("/pix", async (req, res) => {
       !Array.isArray(pixNotificationData) ||
       pixNotificationData.length === 0
     ) {
+      console.warn(
+        "[Webhook Pix] Nenhum dado de notificação PIX válido no payload."
+      );
       return res.status(200).send("Nenhum dado de notificação processado.");
     }
 
@@ -42,16 +45,27 @@ router.post("/pix", async (req, res) => {
       const txId = pixPayload.txid;
 
       if (!txId) {
+        console.warn(
+          "[Webhook Pix] Payload PIX recebido sem txId. Ignorando:",
+          pixPayload
+        );
         continue;
       }
 
       try {
+        // Chama a função handlePixWebhook do serviço
+        // Lembre-se que DonationService.handlePixWebhook não é estática
+        // então você usará a instância donationServiceInstance
         await donationServiceInstance.handlePixWebhook(pixPayload);
         successfulProcesses++;
       } catch (error) {
-        throw new ExternalError();
+        // *** AQUI É O PONTO CRÍTICO PARA DEBUGAR O 500 ***
+        console.error(`[Webhook Pix - TxId ${txId}] Erro ao processar:`, error);
+        failedTxIds.push(txId);
       }
     }
+
+    // ... (restante da lógica de resposta HTTP 200/200 com mensagem)
     if (successfulProcesses > 0 && failedTxIds.length === 0) {
       res.status(200).send("Pix recebido e processado com sucesso.");
     } else if (successfulProcesses > 0 && failedTxIds.length > 0) {
@@ -70,6 +84,8 @@ router.post("/pix", async (req, res) => {
         );
     }
   } catch (error) {
+    // Este catch é para erros que ocorrem ANTES do loop ou com o payload inicial
+    console.error("[Webhook Pix] Erro interno fatal no router:", error);
     res.status(500).send("Erro interno ao processar o webhook.");
   }
 });
