@@ -131,23 +131,23 @@ class DonationService {
         } else {
           const donorCPFFromEfi = devedorEfi?.cpf;
           const donorNameFromEfi = devedorEfi?.nome;
-          const donorCIMFromEfi = devedorEfi?.cim;
           const amountFromEfi = parseFloat(valorOriginal);
 
           // Valida os dados esseciais recebidos da EFI
-          if (!donorCPFFromEfi || !donorNameFromEfi || !donorCIMFromEfi || !amountFromEfi) {
+          if (!donorCPFFromEfi || !donorNameFromEfi || !amountFromEfi) {
             throw new ValidationError(
               `Dados insuficientes ou inválidos da EFI para criar nova doação: ${JSON.stringify(
                 devedorEfi
               )} - R$ ${valorOriginal}`
             );
           }
-
+          const existsPartner = await PartnerService.findByCPF(donorCPFFromEfi);
+          let donorCIM = existsPartner.cim;
           // Cria uma nova instância ded doação com os dados completos e status PAGA
           const newDonation = new DonationModel({
             donorCPF: donorCPFFromEfi,
             donorName: donorNameFromEfi,
-            donorCIM: donorCIMFromEfi,
+            donorCIM: donorCIM,
             amount: amountFromEfi,
             txId: efiChargeDetails.txid,
             locId: efiChargeDetails.loc?.id,
