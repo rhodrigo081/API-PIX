@@ -25,7 +25,7 @@ class DonationService {
    */
   static async createDonation(data) {
     const { donorCPF, amount } = data;
-    let donorName = data;
+    let donorName;
 
     // Validação dos campos obrigatórios
     if (!donorCPF || !donorName || !amount) {
