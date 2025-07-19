@@ -25,7 +25,6 @@ class DonationService {
    */
   static async createDonation(data) {
     const { donorCPF, amount } = data;
-    let donorName;
 
     // Validação dos campos obrigatórios
     if (!donorCPF || !amount) {
@@ -50,7 +49,8 @@ class DonationService {
       throw new NotFoundError("CPF não cadastrado")
     }
 
-    donorName = existsPartner.name;
+    let donorName = existsPartner.name;
+    let donorCIM = existsPartner.cim;
 
     // Criaçao da cobrança Pix
     try {
@@ -58,6 +58,7 @@ class DonationService {
         amount,
         donorCPF: cleanedCPF,
         donorName,
+        donorCIM,
       });
 
       /**
@@ -67,6 +68,7 @@ class DonationService {
       return {
         donorCPF,
         donorName,
+        donorCIM,
         amount: parseFloat(amount),
         txId: pixChargeDetails.txId,
         locId: pixChargeDetails.locId,
