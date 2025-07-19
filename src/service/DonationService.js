@@ -9,6 +9,7 @@ import {
 } from "../utils/Errors.js";
 import DonationModel from "../models/Donation.js";
 import pixService from "./PixService.js";
+import { PartnerService } from './PartnerService';
 
 // Gerenciamento das operações de doações
 class DonationService {
@@ -23,7 +24,8 @@ class DonationService {
    * @throws {ExternalError} - Se houver falha na comunicação com o serviço Pix
    */
   static async createDonation(data) {
-    const { donorCPF, donorName, amount } = data;
+    const { donorCPF, amount } = data;
+    let donorName = data;
 
     // Validação dos campos obrigatórios
     if (!donorCPF || !donorName || !amount) {
@@ -42,6 +44,13 @@ class DonationService {
     if (cleanedCPF.length !== 11) {
       throw new ValidationError("CPF Inválido!");
     }
+
+    const existsPartner = PartnerService.findByCPF(cleanedCPF)
+    if(!existsPartner){
+      throw new NotFoundError("CPF não cadastrado")
+    }
+
+    donorName = existsPartner.name;
 
     // Criaçao da cobrança Pix
     try {
