@@ -45,7 +45,7 @@ class DonationService {
       throw new ValidationError("CPF Inválido!");
     }
 
-    const existsPartner = PartnerService.findByCPF(cleanedCPF)
+    const existsPartner = await PartnerService.findByCPF(cleanedCPF)
     if(!existsPartner){
       throw new NotFoundError("CPF não cadastrado")
     }
