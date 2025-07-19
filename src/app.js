@@ -38,7 +38,7 @@ app.use(errorHandler);
 app.use("/", login);
 app.use("/doacoes", donationRoutes);
 app.use("/parceiros", partnerRoutes);
-app.use("/webhook", webhook);
+app.use("/api/webhook", webhook);
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
 app.get("/health", (req, res) => {
