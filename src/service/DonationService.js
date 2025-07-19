@@ -135,7 +135,7 @@ class DonationService {
           const amountFromEfi = parseFloat(valorOriginal);
 
           // Valida os dados esseciais recebidos da EFI
-          if (!donorCPFFromEfi || !donorNameFromEfi || !devedorEfi.cim || !amountFromEfi) {
+          if (!donorCPFFromEfi || !donorNameFromEfi || !donorCIMFromEfi || !amountFromEfi) {
             throw new ValidationError(
               `Dados insuficientes ou inválidos da EFI para criar nova doação: ${JSON.stringify(
                 devedorEfi

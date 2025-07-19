@@ -44,7 +44,8 @@ router.post("/gerar", async (req, res, next) => {
     });
 
     res.status(201).json({
-      donor: pixDetails.donorName,
+      donorName: pixDetails.donorName,
+      donorCIM: pixDetails.donorCIM,
       value: amount,
       txId: pixDetails.txId,
       qrCode: pixDetails.qrCode,
