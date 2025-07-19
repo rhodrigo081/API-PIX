@@ -4,18 +4,6 @@ import { ValidationError } from "../utils/Errors.js";
 import DonationService from "../service/DonationService.js";
 import { authenticateToken } from "../middleware/auth.js"
 
-/**
- * Rota POST /api/doacoes
- * Gera Nova cobrança pix para uma doação
- * @param {object} req.body - Dados da doação no corpo da requisição
- * @param {string} req.body.donorCPF - CPF do doador
- * @param {string} req.body.donorName - Nome do doador
- * @param {number} req.body.amount - Valor da doação
- * @returns {201} - Mensagem de sucesso
- * @returns {400} - Erro de validação
- * @returns {502} - Erro de serviço externo
- * @returns {500} - Erro interno
- */
 
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
@@ -34,19 +22,29 @@ router.get("/", authenticateToken, async (req, res, next) => {
   }
 });
 
+/**
+ * Rota POST /doacoes/gerar
+ * Gera Nova cobrança pix para uma doação
+ * @param {object} req.body - Dados da doação no corpo da requisição
+ * @param {string} req.body.donorName - Nome do doador
+ * @param {number} req.body.amount - Valor da doação
+ * @returns {201} - Mensagem de sucesso
+ * @returns {400} - Erro de validação
+ * @returns {502} - Erro de serviço externo
+ * @returns {500} - Erro interno
+ */
 router.post("/gerar", async (req, res, next) => {
   try {
-    const { donorCPF, donorName, amount } = req.body;
+    const { donorCPF, amount } = req.body;
 
     // Chama o serviço para criação da doação e cobrança pix
     const pixDetails = await DonationService.createDonation({
       donorCPF,
-      donorName,
       amount,
     });
 
     res.status(201).json({
-      donor: donorName,
+      donor: pixDetails.donorName,
       value: amount,
       txId: pixDetails.txId,
       qrCode: pixDetails.qrCode,
