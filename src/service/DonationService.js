@@ -9,7 +9,7 @@ import {
 } from "../utils/Errors.js";
 import DonationModel from "../models/Donation.js";
 import pixService from "./PixService.js";
-import { PartnerService } from './PartnerService';
+import { PartnerService } from './PartnerService.js';
 
 // Gerenciamento das operações de doações
 class DonationService {
