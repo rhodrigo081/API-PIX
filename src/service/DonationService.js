@@ -131,7 +131,7 @@ class DonationService {
         } else {
           const donorCPFFromEfi = devedorEfi?.cpf;
           const donorNameFromEfi = devedorEfi?.nome;
-          const donorCIMFromEfi = devedorEfi.cim;
+          const donorCIMFromEfi = devedorEfi?.cim;
           const amountFromEfi = parseFloat(valorOriginal);
 
           // Valida os dados esseciais recebidos da EFI
