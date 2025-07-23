@@ -217,7 +217,7 @@ class DonationService {
         };
       }
 
-      const snapshot = await docRef.limit(limit).offset(offset).get();
+      const snapshot = await docRef.orderBy("createdAt", "desc").limit(limit).offset(offset).get();
 
       const donations = snapshot.docs.map(
         (doc) => new DonationModel({ id: doc.id, ...doc.data() })
