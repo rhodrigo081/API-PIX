@@ -26,7 +26,22 @@ export default class Donation {
     this.qrCode = qrCode;
     this.copyPaste = copyPaste;
     this.status = status;
-    this.createdAt = createdAt;
+    this.createdAt = this.convertToDate(createdAt);
+  }
+
+  convertToDate(timestamp) {
+    if (
+      timestamp &&
+      typeof timestamp._seconds === "number" &&
+      typeof timestamp._nanoseconds === "number"
+    ) {
+      return new Date(
+        timestamp._seconds * 1000 + timestamp._nanoseconds / 1_000_000
+      );
+    }
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
   }
 
   async save() {
@@ -40,7 +55,10 @@ export default class Donation {
       qrCode: this.qrCode,
       copyPaste: this.copyPaste,
       status: this.status,
-      createdAt: this.createdAt instanceof Date ? admin.firestore.Timestamp.fromDate(this.createdAt) : this.createdAt,
+      createdAt:
+        this.createdAt instanceof Date
+          ? admin.firestore.Timestamp.fromDate(this.createdAt)
+          : this.createdAt || admin.firestore.FieldValue.serverTimestamp(),
     };
 
     let docRef;
@@ -55,7 +73,7 @@ export default class Donation {
       }
       return { id: this.id, ...dataToSave };
     } catch (error) {
-      throw new DatabaseError(`Erro ao salvar a doação: , ${error}`);
+      throw new DatabaseError(`Erro ao salvar a doação: ${error.message}`); // Adicionei .message aqui
     }
   }
 }
