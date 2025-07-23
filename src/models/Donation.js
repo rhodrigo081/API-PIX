@@ -40,7 +40,7 @@ export default class Donation {
       qrCode: this.qrCode,
       copyPaste: this.copyPaste,
       status: this.status,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt instanceof Date ? admin.firestore.Timestamp.fromDate(this.createdAt) : this.createdAt,
     };
 
     let docRef;
@@ -49,6 +49,7 @@ export default class Donation {
         docRef = db.collection("donations").doc(this.id);
         await docRef.set(dataToSave, { merge: true });
       } else {
+        dataToSave.createdAt = admin.firestore.FieldValue.serverTimestamp();
         docRef = await db.collection("donations").add(dataToSave);
         this.id = docRef.id;
       }
