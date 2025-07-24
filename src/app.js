@@ -11,8 +11,15 @@ import webhook from "./routes/Webhook.js";
 import partnerRoutes from "./routes/PartnerRoutes.js";
 import cookieParser from "cookie-parser";
 
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ["GET", "POST"],
+  allowedHeader: ["Content-type", "Authorization"],
+}
+
 const app = express();
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
 const rawBodySaver = (req, res, buf, encoding) => {
