@@ -2,8 +2,7 @@ import express from "express";
 const router = express.Router();
 import { ValidationError } from "../utils/Errors.js";
 import DonationService from "../service/DonationService.js";
-import { authenticateToken } from "../middleware/auth.js"
-
+import { authenticateToken } from "../middleware/auth.js";
 
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
@@ -56,28 +55,32 @@ router.post("/gerar", async (req, res, next) => {
   }
 });
 
-router.get("/pesquisar/:searchParam", authenticateToken, async (req, res, next) => {
-  try {
-    const { searchParam } = req.params;
+router.get(
+  "/pesquisar/:searchParam",
+  authenticateToken,
+  async (req, res, next) => {
+    try {
+      const { searchParam } = req.params;
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = 10;
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
 
-    const result = await DonationService.searchDonations(
-      searchParam,
-      page,
-      limit
-    );
+      const result = await DonationService.searchDonations(
+        searchParam,
+        page,
+        limit
+      );
 
-    if (result) {
-      return res.status(200).json(result);
-    } else {
-      return res.status(404).json("Nenhuma doação encontrada");
+      if (result) {
+        return res.status(200).json(result);
+      } else {
+        return res.status(404).json("Nenhuma doação encontrada");
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 router.get("/contagem", authenticateToken, async (req, res, next) => {
   try {
@@ -147,6 +150,45 @@ router.get("/evolucao", authenticateToken, async (req, res, next) => {
   try {
     const evolutionData = await DonationService.donationEvolution();
     res.status(200).json(evolutionData);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/relatorio", authenticateToken, async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (!startDate || !endDate) {
+      throw new ValidationError(
+        "As datas de início e fim são obrigatórias para o relatório."
+      );
+    }
+
+    // Valida o formato da data (opcional, mas recomendado)
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(endDate)
+    ) {
+      throw new ValidationError("Formato de data inválido. Use YYYY-MM-DD.");
+    }
+
+    const reportData = await DonationService.getDonationsReportByDate(
+      startDate,
+      endDate,
+      page,
+      limit
+    );
+
+    if (reportData && reportData.donations && reportData.donations.length > 0) {
+      return res.status(200).json(reportData);
+    } else {
+      return res
+        .status(404)
+        .json("Nenhuma doação encontrada para o período especificado.");
+    }
   } catch (error) {
     next(error);
   }
